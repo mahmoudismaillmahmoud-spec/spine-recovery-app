@@ -152,10 +152,22 @@ export function Dashboard({ app }) {
         </div>
       </div>
       <div className="health-sync-row">
-        <button className="health-sync-btn" onClick={app.sendToAppleHealth}>{isAr ? '🍏 أرسل لـ Apple Health' : '🍏 Send to Apple Health'}</button>
+        <div className="health-sync-btns">
+          <button className="health-sync-btn" onClick={app.sendToAppleHealth}>{isAr ? '🍏 أرسل لـ Apple Health' : '🍏 Send to Apple Health'}</button>
+          <button className="health-sync-btn import" onClick={app.importFromHealth}>{isAr ? '📥 هات من Apple Health' : '📥 Import from Apple Health'}</button>
+        </div>
+        {S.healthMsg && <p className="health-msg">{S.healthMsg}</p>}
+        {S.healthImport && (
+          <div className="health-stats">
+            {S.healthImport.steps != null && <span>👣 {Math.round(S.healthImport.steps).toLocaleString()} {isAr ? 'خطوة' : 'steps'}</span>}
+            {S.healthImport.weight != null && <span>⚖️ {S.healthImport.weight} {isAr ? 'كجم' : 'kg'}</span>}
+            {S.healthImport.sleep != null && <span>😴 {S.healthImport.sleep} {isAr ? 'ساعة' : 'h'}</span>}
+            {S.healthImport.waterMl != null && <span>💧 {Math.round(S.healthImport.waterMl)} {isAr ? 'مل' : 'mL'}</span>}
+          </div>
+        )}
         <p>{isAr
-          ? 'محتاج مرة واحدة بس تعمل Shortcut اسمه "Log Spine Recovery" على جهازك (Shortcuts app) يستقبل البيانات ويحفظها في تطبيق الصحة — بعدها الزرار ده هيشتغل تلقائي كل مرة.'
-          : 'One-time setup: create a Shortcut named "Log Spine Recovery" in the Shortcuts app that receives this data and logs it into Health — after that, this button works automatically every time.'}</p>
+          ? 'أرسل: محتاج Shortcut اسمه "Log Spine Recovery". هات: محتاج Shortcut اسمه "Get Spine Health" بيقرا خطواتك ووزنك ونومك ومياهك من الصحة — دوس الزرار، ولما الشورت كت يخلص ارجع ودوسه تاني.'
+          : 'Send needs a Shortcut named "Log Spine Recovery". Import needs a Shortcut named "Get Spine Health" that reads your steps, weight, sleep and water from Health — tap the button, and when the Shortcut finishes come back and tap it again.'}</p>
       </div>
       <Suggestion app={app} />
       <WeeklySummary app={app} streak={streak} />

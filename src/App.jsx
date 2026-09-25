@@ -50,6 +50,7 @@ export default class App extends React.Component {
       celebrate: null, saveShow: false, voiceOn: ls('voiceModeOn', false), photos: ls('reportPhotos', []),
       detailItemId: null, pwaBannerShow: !standalone && !ls('pwaBannerDismissed', false),
       waterCount: ls('water_' + todayKey(), 0), sleepHours: ls('sleep_' + todayKey(), ''),
+      healthImport: ls('healthImport_' + todayKey(), null), healthMsg: null,
       undoToast: null, pendingPhoto: null, photoTagWeight: '', photoTagType: 'progress',
     };
     this.intervals = {};
@@ -230,6 +231,43 @@ export default class App extends React.Component {
     })));
     const payload = { water_cups: this.state.waterCount || 0, sleep_hours: this.state.sleepHours || '', weight_kg: weight, date: todayKey() };
     window.location.href = `shortcuts://run-shortcut?name=${encodeURIComponent('Log Spine Recovery')}&input=text&text=${encodeURIComponent(JSON.stringify(payload))}`;
+  };
+  // Pulls today's data that the "Get Spine Health" Shortcut copied to the clipboard.
+  // (Clipboard, not a URL: iOS opens links in Safari, whose storage is separate from the installed app.)
+  parseHealthClipboard(text) {
+    try {
+      const d = JSON.parse(String(text || '').trim());
+      if (!d || d.source !== 'spine-health') return null;
+      return d;
+    } catch (e) { return null; }
+  }
+  importFromHealth = async () => {
+    let data = null;
+    try { data = this.parseHealthClipboard(await navigator.clipboard.readText()); } catch (e) {}
+    const fresh = data && (!data.date || new Date(data.date).toDateString() === todayKey());
+    if (!fresh) {
+      this.setState({ healthMsg: this.t('بشغّل الشورت كت… لما يخلص ارجع للتطبيق ودوس الزرار تاني', 'Running the Shortcut… when it finishes, come back and tap this button again') });
+      window.location.href = `shortcuts://run-shortcut?name=${encodeURIComponent('Get Spine Health')}`;
+      return;
+    }
+    const num = v => (v === '' || v == null || isNaN(Number(v)) ? null : Math.round(Number(v) * 10) / 10);
+    const imported = { steps: num(data.steps), weight: num(data.weight_kg), sleep: num(data.sleep_hours), waterMl: num(data.water_ml) };
+    if (imported.waterMl != null) {
+      const cups = Math.round(imported.waterMl / 240);
+      lsSet('water_' + todayKey(), cups);
+      this.setState({ waterCount: cups });
+    }
+    if (imported.sleep != null) this.setSleepHours(String(imported.sleep));
+    lsSet('healthImport_' + todayKey(), imported);
+    if (imported.weight != null) {
+      const log = ls('bodyWeightLog', []).filter(x => x.date !== todayKey());
+      log.push({ date: todayKey(), weight: imported.weight });
+      if (log.length > 120) log.shift();
+      lsSet('bodyWeightLog', log);
+    }
+    try { await navigator.clipboard.writeText(''); } catch (e) {}
+    this.showSaved();
+    this.setState({ healthMsg: null, healthImport: imported });
   };
   dismissPwaBanner = () => { this.save('pwaBannerDismissed', true); this.setState({ pwaBannerShow: false }); };
   isDaySkipped(dayId) { return ls('skipped_' + dayId + '_' + todayKey(), false); }

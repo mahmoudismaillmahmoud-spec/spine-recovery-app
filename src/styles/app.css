@@ -4,3 +4,11 @@
    push the Settings button off-screen on phones. */
 .navbtn{min-width:0;padding-inline:2px;}
 .navbtn > span[data-lang]{max-width:100%;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
+
+/* Apple Health import */
+.health-sync-btns{display:flex;flex-wrap:wrap;gap:8px;}
+.health-sync-btn.import{background:linear-gradient(135deg,var(--green),var(--green-dark));}
+.health-sync-row p.health-msg{color:var(--green);font-weight:700;}
+.health-stats{display:flex;flex-wrap:wrap;gap:6px;margin-top:10px;}
+.health-stats span{background:var(--green-light);color:var(--green-dark);border-radius:12px;padding:4px 10px;font-size:.78em;font-weight:700;}
+html.dark .health-stats span{background:var(--card2);color:var(--txt);}
