@@ -1,0 +1,1498 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<template id="__bundler_thumbnail" data-bg-color="#123f2b">
+<svg viewBox="0 0 1200 800" xmlns="http://www.w3.org/2000/svg">
+  <rect width="1200" height="800" fill="#123f2b"/>
+  <circle cx="600" cy="400" r="220" fill="none" stroke="#4cc48f" stroke-width="26"/>
+  <path d="M600 260v280M480 340l120-80 120 80" fill="none" stroke="#ffffff" stroke-width="22" stroke-linecap="round" stroke-linejoin="round"/>
+</svg>
+</template>
+</helmet>
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover, maximum-scale=1, user-scalable=no">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="Spine Recovery">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="theme-color" content="#123f2b">
+<link rel="apple-touch-icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 180 180'%3E%3Crect width='180' height='180' rx='40' fill='%23123f2b'/%3E%3Ccircle cx='90' cy='78' r='34' fill='none' stroke='%234cc48f' stroke-width='9'/%3E%3Cpath d='M90 112v40M74 128l16-10 16 10' fill='none' stroke='white' stroke-width='9' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin="anonymous">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700;800;900&amp;family=Plus+Jakarta+Sans:wght@400;600;700;800&amp;display=swap">
+<link rel="stylesheet" href="theme.css">
+<script src="spine-data.js"></script>
+</helmet>
+<sc-if value="{{ pwaBannerShow }}" hint-placeholder-val="{{ false }}">
+  <div class="pwa-banner">
+    <div><strong>{{ pwaBannerText }}</strong><p>{{ pwaBannerSub }}</p></div>
+    <button onClick="{{ dismissPwa }}">✕</button>
+  </div>
+</sc-if>
+<div class="topbar">
+  <h1>{{ appName }}</h1>
+  <div style="display:flex;gap:10px;align-items:center">
+    <button class="theme-btn" onClick="{{ toggleTheme }}">{{ themeIcon }}</button>
+    <button class="lang-btn" onClick="{{ toggleLang }}"><span data-lang="ar">EN</span><span data-lang="en">AR</span></button>
+  </div>
+</div>
+<div class="cover">
+  <h2><span data-lang="ar">جدولك اليومي المتحرك</span><span data-lang="en">Your Interactive Daily Schedule</span></h2>
+  <p><span data-lang="ar">مرونة + استرتشات + قوة، مع تشيك ليست وتايمر وعداد لكل تمرين، وتتبع تقدمك أول بأول.</span><span data-lang="en">Mobility + stretching + strength, with a checklist, timer, and rep counter for every exercise, tracking your progress live.</span></p>
+</div>
+<div class="page">
+  <div class="warn">
+    <span data-lang="ar"><strong>مهم:</strong> عندك ضغط عصبي حقيقي مع تنميل في القدم — خد موافقة دكتورك/أخصائي العلاج الطبيعي قبل ما تبدأ في أي قسم قوة أو تأهيل هنا.</span>
+    <span data-lang="en"><strong>Important:</strong> you have real nerve compression with foot numbness — get sign-off from your physician/PT before starting any strength or rehab section here.</span>
+  </div>
+  <sc-if value="{{ showStreak }}" hint-placeholder-val="{{ false }}">
+    <div class="streak-badge">{{ flameIcon }} <span class="streak-text">{{ streakText }}</span></div>
+  </sc-if>
+  <div class="stat-strip">
+    <div class="stat-pill"><b>{{ statDayVal }}</b><span>{{ statDayLbl }}</span></div>
+    <div class="stat-pill"><b>{{ statWeekVal }}</b><span>{{ statWeekLbl }}</span></div>
+    <div class="stat-pill"><b>{{ statStreakVal }}</b><span>{{ statStreakLbl }}</span></div>
+  </div>
+  <div class="progress-wrap">
+    <div class="ring {{ ringDayComplete }}"><svg width="90" height="90"><circle class="bg" cx="45" cy="45" r="36"></circle><circle class="fg" cx="45" cy="45" r="36" style="stroke-dasharray:226.19px;stroke-dashoffset:{{ ringDayOffset }}px"></circle></svg><div class="ring-label">{{ ringDayPct }}</div><div><span data-lang="ar">إنجاز اليوم</span><span data-lang="en">Today</span></div></div>
+    <div class="ring {{ ringWeekComplete }}"><svg width="90" height="90"><circle class="bg" cx="45" cy="45" r="36"></circle><circle class="fg" cx="45" cy="45" r="36" style="stroke-dasharray:226.19px;stroke-dashoffset:{{ ringWeekOffset }}px"></circle></svg><div class="ring-label">{{ ringWeekPct }}</div><div><span data-lang="ar">إنجاز الأسبوع</span><span data-lang="en">This Week</span></div></div>
+  </div>
+  <div class="search-wrap">
+    <input type="text" value="{{ query }}" onInput="{{ onSearch }}" placeholder="{{ searchPlaceholder }}">
+    <span class="sicon">{{ searchIcon }}</span>
+    <div class="search-results {{ searchShowCls }}">
+      <sc-for list="{{ searchResults }}" as="r" hint-placeholder-count="0">
+        <div class="search-result-row" onClick="{{ r.go }}">{{ r.name }}<small>{{ r.dayName }}</small></div>
+      </sc-for>
+      <sc-if value="{{ searchEmpty }}" hint-placeholder-val="{{ false }}"><div class="search-result-row" style="cursor:default">{{ noResultsText }}</div></sc-if>
+    </div>
+  </div>
+  <div class="daily-log-row">
+    <div class="daily-log-card">
+      <span>{{ waterLabel }}</span>
+      <div class="counter"><button onClick="{{ waterSub }}">−</button><span class="val">{{ waterCount }}</span><button onClick="{{ waterAdd }}">+</button></div>
+    </div>
+    <div class="daily-log-card">
+      <span>{{ sleepLabel }}</span>
+      <input type="number" class="winput" min="0" max="14" step="0.5" value="{{ sleepVal }}" onInput="{{ onSleepChange }}">
+    </div>
+  </div>
+  <div class="health-sync-row">
+    <button class="health-sync-btn" onClick="{{ sendToHealth }}">{{ healthBtnText }}</button>
+    <p>{{ healthHelpText }}</p>
+  </div>
+  <sc-if value="{{ suggestShow }}" hint-placeholder-val="{{ false }}">
+    <div class="suggest-card" onClick="{{ suggestGo }}">
+      <div><h4>{{ suggestTitle }}</h4><p>{{ suggestSub }}</p></div>
+      <span class="arrow-ic">{{ suggestArrow }}</span>
+    </div>
+  </sc-if>
+  <sc-if value="{{ weeklyShow }}" hint-placeholder-val="{{ false }}">
+    <div class="weekly-summary">
+      <h4>{{ weeklyTitle }}</h4>
+      <div class="ws-stats">
+        <div class="ws-stat"><b>{{ weeklyAvg }}</b><span>{{ weeklyAvgLbl }}</span></div>
+        <div class="ws-stat"><b>{{ weeklyFull }}</b><span>{{ weeklyFullLbl }}</span></div>
+        <div class="ws-stat"><b>{{ weeklyStreak }}</b><span>{{ weeklyStreakLbl }}</span></div>
+      </div>
+    </div>
+  </sc-if>
+  <div class="tabs">
+    <sc-for list="{{ tabs }}" as="t" hint-placeholder-count="5">
+      <div class="tab {{ t.activeCls }}" onClick="{{ t.go }}">{{ t.iconEl }}<span data-lang="ar">{{ t.ar }}</span><span data-lang="en">{{ t.en }}</span></div>
+    </sc-for>
+  </div>
+  <div id="panels">
+    <sc-for list="{{ days }}" as="d" hint-placeholder-count="1">
+      <div class="day-panel {{ d.activeCls }}" key="{{ d.id }}" data-screen-label="{{ d.en }}">
+        <div class="day-progress">
+          <div style="display:flex;justify-content:space-between;align-items:center;gap:10px;flex-wrap:wrap">
+            <span><span data-lang="ar">تقدم {{ d.ar }}</span><span data-lang="en">{{ d.en }} progress</span> — <span>{{ d.pctLabel }}</span></span>
+            <button class="skip-day-btn {{ d.skipBtnCls }}" onClick="{{ d.toggleSkip }}">{{ d.skipBtnText }}</button>
+          </div>
+          <div class="bar-outer"><div class="bar-inner {{ d.barCls }}" style="width:{{ d.pct }}%"></div></div>
+        </div>
+        <sc-for list="{{ d.groups }}" as="g" hint-placeholder-count="2">
+          <h3 class="group"><span class="gicon">{{ g.iconEl }}</span> <span data-lang="ar">{{ g.ar }}</span><span data-lang="en">{{ g.en }}</span><span class="group-count">{{ g.countLabel }}</span></h3>
+          <sc-for list="{{ g.items }}" as="it" hint-placeholder-count="3">
+            <div class="card {{ it.doneCls }}" id="card_{{ it.id }}">
+              <div class="card-top">
+                <div class="chk {{ it.chkCls }}" onClick="{{ it.toggle }}"><svg viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="3"><path d="M4 12l5 5L20 6"></path></svg></div>
+                <div class="card-anim {{ it.animCls }}">{{ it.animEl }}</div>
+                <div class="card-title" onClick="{{ it.openDetail }}" style="cursor:pointer">
+                  <span data-lang="ar">{{ it.ar }}</span><span data-lang="en">{{ it.en }}</span>
+                  <div class="card-sub">{{ it.subEl }}</div>
+                </div>
+                <sc-if value="{{ it.hasVid }}" hint-placeholder-val="{{ false }}"><a class="vid" target="_blank" href="{{ it.vidUrl }}">{{ it.playIcon }} <span data-lang="ar">فيديو</span><span data-lang="en">video</span></a></sc-if>
+              </div>
+              <sc-if value="{{ it.isReps }}" hint-placeholder-val="{{ false }}">
+                <div class="controls"><div class="counter">
+                  <button onClick="{{ it.dec }}">−</button>
+                  <span class="val">{{ it.cntLabel }}</span>
+                  <button onClick="{{ it.inc }}">+</button>
+                </div></div>
+              </sc-if>
+              <sc-if value="{{ it.isHold }}" hint-placeholder-val="{{ false }}">
+                <div class="controls"><div class="timer {{ it.timerCls }}">
+                  <span class="tval">{{ it.timeLabel }}</span>
+                  <button onClick="{{ it.start }}"><span data-lang="ar">ابدأ</span><span data-lang="en">Start</span></button>
+                  <button onClick="{{ it.reset }}">↺</button>
+                </div></div>
+              </sc-if>
+              <sc-if value="{{ it.hasSets }}" hint-placeholder-val="{{ false }}">
+                <div class="quicklog">
+                  <input type="number" class="winput" value="{{ it.wVal }}" onInput="{{ it.onWeight }}" placeholder="{{ it.wPh }}" min="0" step="0.5">
+                  <div class="painbtns">
+                    <button class="{{ it.p1cls }}" onClick="{{ it.pain1 }}">🙂</button>
+                    <button class="{{ it.p2cls }}" onClick="{{ it.pain2 }}">😐</button>
+                    <button class="{{ it.p3cls }}" onClick="{{ it.pain3 }}">😣</button>
+                  </div>
+                  <button class="logbtn" onClick="{{ it.log }}"><span data-lang="ar">سجّل</span><span data-lang="en">Log</span></button>
+                </div>
+                <sc-if value="{{ it.hasNote }}" hint-placeholder-val="{{ false }}"><div class="adaptive-note show {{ it.noteCls }}">{{ it.noteText }}</div></sc-if>
+              </sc-if>
+            </div>
+          </sc-for>
+        </sc-for>
+      </div>
+    </sc-for>
+    <div class="day-panel {{ progressActiveCls }}" data-screen-label="Progress">
+      <div class="chart-card level-card">
+        <div class="level-badge">{{ trophyIcon }}</div>
+        <div>
+          <h4 style="margin:0">{{ levelTitle }}</h4>
+          <div class="bar-outer" style="width:160px;margin-top:6px"><div class="bar-inner" style="width:{{ levelBarW }}%"></div></div>
+          <div style="font-size:.72em;color:var(--txt-dim);margin-top:4px">{{ levelSub }}</div>
+        </div>
+      </div>
+      <div class="chart-card">
+        <h4>{{ chartTitle }}</h4>
+        <div class="bar-chart">
+          <sc-for list="{{ chartBars }}" as="b" hint-placeholder-count="0"><div class="bcol {{ b.cls }}" style="height:{{ b.h }}%"></div></sc-for>
+          <sc-if value="{{ chartEmpty }}" hint-placeholder-val="{{ false }}"><div style="width:100%;text-align:center;color:var(--txt-dim);font-size:.8em;padding-top:30px">{{ noDataText }}</div></sc-if>
+        </div>
+        <div class="bar-labels"><sc-for list="{{ chartBars }}" as="b" hint-placeholder-count="0"><span>{{ b.lbl }}</span></sc-for></div>
+      </div>
+      <div class="chart-card">
+        <h4>{{ streakCardTitle }}</h4>
+        <p style="color:var(--txt-dim);font-size:.85em;margin:0">{{ streakCardSub }}</p>
+      </div>
+      <div class="chart-card">
+        <h4>{{ weightsTitle }}</h4>
+        <sc-for list="{{ weightRows }}" as="w" hint-placeholder-count="0">
+          <div class="weight-history-row"><span>{{ w.name }}</span><span><strong>{{ w.wt }}</strong> · {{ w.count }}</span></div>
+        </sc-for>
+        <sc-if value="{{ weightsEmpty }}" hint-placeholder-val="{{ false }}"><div style="color:var(--txt-dim);font-size:.85em;text-align:center;padding:10px 0">{{ weightsEmptyText }}</div></sc-if>
+      </div>
+      <div class="chart-card">
+        <h4>{{ photosTitle }}</h4>
+        <p style="color:var(--txt-dim);font-size:.82em;margin:0 0 10px">{{ photosSub }}</p>
+        <sc-if value="{{ photoAnalysisShow }}" hint-placeholder-val="{{ false }}"><div class="photo-analysis">{{ photoAnalysisText }}</div></sc-if>
+        <div class="photo-grid">
+          <sc-for list="{{ photoThumbs }}" as="p2" hint-placeholder-count="0">
+            <div class="photo-thumb">{{ p2.imgEl }}<span>{{ p2.lbl }}</span></div>
+          </sc-for>
+          <sc-if value="{{ photosEmpty }}" hint-placeholder-val="{{ false }}"><div style="color:var(--txt-dim);font-size:.85em;text-align:center;padding:10px 0;grid-column:1/-1">{{ photosEmptyText }}</div></sc-if>
+        </div>
+        <div class="backup-row"><button onClick="{{ pickPhoto }}">{{ cameraIcon }} <span data-lang="ar">إضافة صورة</span><span data-lang="en">Add Photo</span></button></div>
+        <input type="file" id="photoFile" accept="image/*" style="display:none" onChange="{{ addPhoto }}">
+      </div>
+      <div class="chart-card">
+        <h4>{{ voiceTitle }}</h4>
+        <p style="color:var(--txt-dim);font-size:.82em;margin:0 0 10px">{{ voiceSub }}</p>
+        <div class="backup-row"><button onClick="{{ toggleVoice }}">{{ voiceBtnText }}</button></div>
+      </div>
+      <div class="chart-card">
+        <h4>{{ reportTitle }}</h4>
+        <p style="color:var(--txt-dim);font-size:.82em;margin:0 0 10px">{{ reportSub }}</p>
+        <div class="backup-row"><button onClick="{{ genReport }}">{{ reportBtnText }}</button></div>
+      </div>
+      <div class="chart-card">
+        <h4>{{ backupTitle }}</h4>
+        <p style="color:var(--txt-dim);font-size:.85em;margin:0">{{ backupSub }}</p>
+        <div class="backup-row">
+          <button onClick="{{ exportBackup }}">{{ exportText }}</button>
+          <button onClick="{{ pickImport }}">{{ importText }}</button>
+        </div>
+        <input type="file" id="importFile" accept="application/json" style="display:none" onChange="{{ importBackup }}">
+      </div>
+    </div>
+    <div class="day-panel {{ coachActiveCls }}" data-screen-label="Coach">
+      <div class="coach-header">
+        <div class="coach-avatar">{{ coachIcon }}</div>
+        <div>
+          <h3 style="margin:0">{{ coachTitle }}</h3>
+          <p style="margin:2px 0 0;font-size:.78em;color:var(--txt-dim)">{{ coachSub }}</p>
+        </div>
+      </div>
+      <sc-for list="{{ coachCards }}" as="c" hint-placeholder-count="2">
+        <div class="chart-card coach-card {{ c.cls }}"><h4>{{ c.title }}</h4><p>{{ c.msg }}</p></div>
+      </sc-for>
+      <div class="note" style="margin-top:20px">{{ coachDisclaimer }}</div>
+    </div>
+  </div>
+  <div class="footer-note">
+    <span data-lang="ar">هذه أداة تنظيم ومتابعة تعليمية، وليست تشخيصًا أو بديلاً عن تقييم طبيبك أو أخصائي العلاج الطبيعي.</span>
+    <span data-lang="en">This is an educational tracking tool, not a diagnosis or a substitute for evaluation by your physician or physical therapist.</span>
+  </div>
+</div>
+<div class="save-msg {{ saveCls }}"><span data-lang="ar">✓ تم الحفظ</span><span data-lang="en">✓ Saved</span></div>
+<div class="toast-action {{ undoShowCls }}"><span>{{ undoText }}</span><button onClick="{{ undoClick }}">{{ undoBtnText }}</button></div>
+<div class="sheet-overlay {{ sheetOpenCls }}" onClick="{{ closeSettings }}"></div>
+<div class="sheet {{ sheetOpenCls }}">
+  <div class="sheet-handle"></div>
+  <h3><span data-lang="ar">الإشعارات اليومية</span><span data-lang="en">Daily Reminders</span></h3>
+  <p class="card-sub"><span data-lang="ar">حدد وقت كل تذكير — هيبعتلك إشعار طول ما الصفحة مفتوحة على جهازك (بعد ما تضيفها للشاشة الرئيسية).</span><span data-lang="en">Set a time for each reminder — you'll get a notification while this page is open on your device (after adding it to your home screen).</span></p>
+  <sc-for list="{{ settingRows }}" as="s" hint-placeholder-count="7">
+    <div class="setting-row" style="{{ s.rowStyle }}">
+      <label><span class="row-ic">{{ s.iconEl }}</span> <span data-lang="ar">{{ s.ar }}</span><span data-lang="en">{{ s.en }}</span></label>
+      <input type="time" value="{{ s.val }}" onInput="{{ s.onChange }}">
+    </div>
+  </sc-for>
+  <button class="big-btn" onClick="{{ enableNotifications }}"><span data-lang="ar">تفعيل الإشعارات وحفظ المواعيد</span><span data-lang="en">Enable Notifications &amp; Save Times</span></button>
+  <div class="notif-status {{ notifOkCls }}">{{ notifStatusText }}</div>
+</div>
+<div class="bottomnav">
+  <button class="navbtn {{ navTodayCls }}" onClick="{{ goToday }}"><span class="ic">{{ homeIcon }}</span><span data-lang="ar">اليوم</span><span data-lang="en">Today</span></button>
+  <button class="navbtn {{ navWeekCls }}" onClick="{{ goWeek }}"><span class="ic">{{ calIcon }}</span><span data-lang="ar">الأسبوع</span><span data-lang="en">Week</span></button>
+  <button class="navbtn {{ navNutritionCls }}" onClick="{{ goNutrition }}"><span class="ic">{{ nutIcon }}</span><span data-lang="ar">تغذية</span><span data-lang="en">Nutrition</span></button>
+  <button class="navbtn {{ navSuppsCls }}" onClick="{{ goSupps }}"><span class="ic">{{ supIcon }}</span><span data-lang="ar">مكملات</span><span data-lang="en">Supplements</span></button>
+  <button class="navbtn {{ navCoachCls }}" onClick="{{ goCoach }}"><span class="ic">{{ coachNavIcon }}</span><span data-lang="ar">المدرب</span><span data-lang="en">Coach</span></button>
+  <button class="navbtn {{ navProgressCls }}" onClick="{{ goProgress }}"><span class="ic">{{ chartIcon }}</span><span data-lang="ar">التقدم</span><span data-lang="en">Progress</span></button>
+  <button class="navbtn {{ navSettingsCls }}" onClick="{{ openSettings }}"><span class="ic">{{ setIcon }}</span><span data-lang="ar">إعدادات</span><span data-lang="en">Settings</span></button>
+</div>
+<div class="sos-btn" onClick="{{ openEmergency }}"><span>{{ sosIcon }}</span></div>
+<div class="sheet-overlay {{ emergencyOpenCls }}" onClick="{{ closeEmergency }}"></div>
+<div class="sheet emergency-sheet {{ emergencyOpenCls }}">
+  <div class="sheet-handle"></div>
+  <h3 style="color:#c0392b"><span data-lang="ar">علامات خطر — روح دكتور فورًا لو حسيت بـ:</span><span data-lang="en">Warning Signs — Seek care immediately if you notice:</span></h3>
+  <ul class="emergency-list">
+    <li><span data-lang="ar">تنميل أو ضعف جديد أو متزايد، أو صعوبة رفع مقدمة القدم</span><span data-lang="en">New or worsening numbness/weakness, or difficulty lifting the front of the foot</span></li>
+    <li><span data-lang="ar">تنميل بينتشر، أو في منطقة الفخذ الداخلي/العجان</span><span data-lang="en">Spreading numbness, or numbness in the inner thigh/groin area</span></li>
+    <li><span data-lang="ar"><strong>فقدان السيطرة على البول أو البراز — طوارئ، روح المستشفى فورًا</strong></span><span data-lang="en"><strong>Loss of bladder or bowel control — emergency, go to the ER immediately</strong></span></li>
+    <li><span data-lang="ar">ألم حاد كهربائي نازل في الرجل بشكل جديد أو بيزيد</span><span data-lang="en">New or worsening sharp, electric, shooting leg pain</span></li>
+    <li><span data-lang="ar">ألم بيصحيك من النوم أو مش بيهدأ في أي وضعية</span><span data-lang="en">Pain that wakes you from sleep or won't settle in any position</span></li>
+  </ul>
+  <p style="font-size:.82em;color:var(--txt-dim)"><span data-lang="ar">لو حسيت بأي حاجة من دي، وقف أي تمرين فورًا وتواصل مع دكتورك أو اذهب لأقرب طوارئ.</span><span data-lang="en">If you notice any of these, stop exercising immediately and contact your doctor or the nearest emergency room.</span></p>
+  <button class="big-btn" style="background:#c0392b" onClick="{{ closeEmergency }}"><span data-lang="ar">فهمت</span><span data-lang="en">Got it</span></button>
+</div>
+<button class="focus-fab" onClick="{{ startFocusMode }}">{{ fabPlayIcon }}<span data-lang="ar">ابدأ التمرين</span><span data-lang="en">Start Workout</span></button>
+<div class="focus-overlay {{ focusOpenCls }}">
+  <div class="focus-top">
+    <button class="focus-close" onClick="{{ exitFocus }}">✕</button>
+    <span class="focus-count">{{ focusCount }}</span>
+  </div>
+  <div class="focus-body">
+    <sc-if value="{{ focusDone }}" hint-placeholder-val="{{ false }}">
+      <div class="level-badge" style="width:70px;height:70px">{{ trophyIcon }}</div>
+      <h2 class="focus-exname">{{ focusDoneText }}</h2>
+      <div class="focus-actions">
+        <sc-if value="{{ focusShowNextDay }}" hint-placeholder-val="{{ false }}"><button class="big-btn" style="max-width:260px" onClick="{{ continueToNextDay }}">{{ focusNextDayText }}</button></sc-if>
+        <button class="big-btn skip-btn" style="max-width:220px" onClick="{{ exitFocus }}">{{ focusOkText }}</button>
+      </div>
+    </sc-if>
+    <sc-if value="{{ focusRest }}" hint-placeholder-val="{{ false }}">
+      <div class="focus-rest-label">{{ restLabel }}</div>
+      <div class="focus-big-timer rest">{{ restRemaining }}</div>
+      <p style="color:var(--txt-dim);margin:0">{{ upNextText }} <strong>{{ focusName }}</strong></p>
+      <div class="focus-actions"><button class="big-btn skip-btn" onClick="{{ skipRest }}">{{ skipRestText }}</button></div>
+    </sc-if>
+    <sc-if value="{{ focusExercise }}" hint-placeholder-val="{{ false }}">
+      <div class="focus-tags"><span class="focus-tag">{{ focusDayTag }}</span><span class="focus-tag phase">{{ focusPhaseTag }}</span></div>
+      <div class="focus-anim">{{ focusAnim }}</div>
+      <h2 class="focus-exname">{{ focusName }}</h2>
+      <div class="focus-target">{{ focusTarget }}</div>
+      <sc-if value="{{ focusIsHold }}" hint-placeholder-val="{{ false }}"><div class="focus-big-timer">{{ focusTimeLabel }}</div></sc-if>
+      <div class="focus-actions">
+        <sc-if value="{{ focusShowStart }}" hint-placeholder-val="{{ false }}"><button class="big-btn" onClick="{{ startFocusHold }}">{{ startText }}</button></sc-if>
+        <button class="big-btn skip-btn" onClick="{{ completeFocusStep }}">{{ focusDoneBtnText }}</button>
+      </div>
+      <sc-if value="{{ focusHasVid }}" hint-placeholder-val="{{ false }}"><a class="vid" target="_blank" href="{{ focusVidUrl }}">{{ fabPlayIcon }} <span>{{ videoText }}</span></a></sc-if>
+    </sc-if>
+  </div>
+</div>
+<sc-if value="{{ pendingShow }}" hint-placeholder-val="{{ false }}">
+  <div class="sheet-overlay open" onClick="{{ cancelPending }}"></div>
+  <div class="sheet open">
+    <div class="sheet-handle"></div>
+    <h3><span data-lang="ar">إضافة صورة</span><span data-lang="en">Add Photo</span></h3>
+    {{ pendingImgEl }}
+    <div class="photo-type-row">
+      <button class="{{ tagTypeProgress }}" onClick="{{ setTagProgress }}"><span data-lang="ar">صورة متابعة</span><span data-lang="en">Progress photo</span></button>
+      <button class="{{ tagTypeReport }}" onClick="{{ setTagReport }}"><span data-lang="ar">تقرير/أشعة</span><span data-lang="en">Report/MRI</span></button>
+    </div>
+    <input type="number" class="winput" style="width:100%;margin-top:10px" step="0.5" min="0" value="{{ tagWeightVal }}" onInput="{{ onTagWeight }}" placeholder="{{ tagWeightPh }}">
+    <button class="big-btn" onClick="{{ savePending }}"><span data-lang="ar">حفظ</span><span data-lang="en">Save</span></button>
+  </div>
+</sc-if>
+<sc-if value="{{ detailShow }}" hint-placeholder-val="{{ false }}">
+  <div class="sheet-overlay open" onClick="{{ closeDetail }}"></div>
+  <div class="sheet open">
+    <div class="sheet-handle"></div>
+    <h3 style="margin-bottom:2px">{{ detailTitle }}</h3>
+    <p class="card-sub" style="margin-top:0">{{ detailSub }}</p>
+    <div class="note" style="margin-top:14px">{{ detailTip }}</div>
+    <button class="big-btn" onClick="{{ closeDetail }}"><span data-lang="ar">تمام</span><span data-lang="en">Got it</span></button>
+  </div>
+</sc-if>
+<sc-if value="{{ celebrateShow }}" hint-placeholder-val="{{ false }}">
+  <div class="sheet-overlay open" style="z-index:95" onClick="{{ closeCelebrate }}"></div>
+  <div class="celebrate-card">
+    <div class="celebrate-icon">{{ coreIcon }}</div>
+    <h3>{{ celebrateTitle }}</h3>
+    <p>{{ celebrateMsg }}</p>
+    <button class="big-btn" onClick="{{ closeCelebrate }}">{{ celebrateBtn }}</button>
+  </div>
+</sc-if>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props="{&quot;appName&quot;:{&quot;editor&quot;:&quot;text&quot;,&quot;default&quot;:&quot;نظام تأهيل العمود الفقري&quot;,&quot;tsType&quot;:&quot;string&quot;,&quot;section&quot;:&quot;Branding&quot;},&quot;primaryColor&quot;:{&quot;editor&quot;:&quot;color&quot;,&quot;default&quot;:[&quot;#1a5c3f&quot;,&quot;#123f2b&quot;,&quot;#4cc48f&quot;],&quot;tsType&quot;:&quot;string&quot;,&quot;section&quot;:&quot;Branding&quot;},&quot;restSeconds&quot;:{&quot;editor&quot;:&quot;range&quot;,&quot;default&quot;:60,&quot;min&quot;:15,&quot;max&quot;:180,&quot;step&quot;:5,&quot;unit&quot;:&quot;s&quot;,&quot;tsType&quot;:&quot;number&quot;,&quot;section&quot;:&quot;Workout&quot;},&quot;xpPerLevel&quot;:{&quot;editor&quot;:&quot;int&quot;,&quot;default&quot;:15,&quot;min&quot;:5,&quot;max&quot;:50,&quot;tsType&quot;:&quot;number&quot;,&quot;section&quot;:&quot;Gamification&quot;},&quot;waterGoal&quot;:{&quot;editor&quot;:&quot;int&quot;,&quot;default&quot;:8,&quot;min&quot;:2,&quot;max&quot;:16,&quot;tsType&quot;:&quot;number&quot;,&quot;section&quot;:&quot;Daily Log&quot;,&quot;unit&quot;:&quot;cups&quot;},&quot;defaultLang&quot;:{&quot;editor&quot;:&quot;enum&quot;,&quot;default&quot;:&quot;ar&quot;,&quot;options&quot;:[&quot;ar&quot;,&quot;en&quot;],&quot;tsType&quot;:&quot;string&quot;,&quot;section&quot;:&quot;Branding&quot;}}">
+class Component extends DCLogic {
+  state = {
+    ready:false, lang:'ar', dark:false, currentDay:'d1', nav:'today',
+    checked:{}, counters:{}, timeLeft:{}, running:{}, query:'',
+    painSel:{}, wInputs:{}, notesTick:0,
+    sheetOpen:false, emergencyOpen:false, notifStatus:null,
+    times:{mob:'07:30',breakfast:'09:00',snack1:'11:30',lunch:'14:00',gym:'17:30',snack2:'19:00',dinner:'21:00'},
+    focus:{open:false, idx:0, phase:'exercise', list:[], remaining:0, holdRunning:false},
+    celebrate:null, saveShow:false, voiceOn:false, photos:[],
+    detailItemId:null, pwaBannerShow:false, waterCount:0, sleepHours:'',
+    undoToast:null
+  };
+  intervals = {};
+  focusInterval = null;
+
+  ls(key, fb){ try{ const v = localStorage.getItem(key); return v==null? fb : JSON.parse(v); }catch(e){ return fb; } }
+  save(key, val){ try{ localStorage.setItem(key, JSON.stringify(val)); }catch(e){} this.showSaved(); }
+  showSaved(){
+    this.setState({saveShow:true});
+    clearTimeout(this._saveT);
+    this._saveT = setTimeout(()=>this.setState({saveShow:false}), 1100);
+  }
+  isAr(){ return this.state.lang !== 'en'; }
+  t(ar, en){ return this.isAr()? ar : en; }
+  svg(html){ return React.createElement('span', {style:{display:'contents'}, dangerouslySetInnerHTML:{__html: html||''}}); }
+
+  applyBrandColor(){
+    const colors = this.props.primaryColor;
+    if(!colors) return;
+    const arr = Array.isArray(colors)? colors : [colors];
+    const [green, dark, light] = arr;
+    const root = document.documentElement.style;
+    if(green) root.setProperty('--green', green);
+    if(dark) root.setProperty('--green-dark', dark);
+    if(light) root.setProperty('--green-accent', light);
+  }
+  componentDidUpdate(prevProps){
+    if(prevProps.primaryColor !== this.props.primaryColor) this.applyBrandColor();
+  }
+  async componentDidMount(){
+    this.applyBrandColor();
+    let tries=0;
+    while(!window.SpineData && tries<200){ await new Promise(r=>setTimeout(r,20)); tries++; }
+    this.D = window.SpineData;
+    let lang = this.props.defaultLang || 'ar';
+    try{ const raw = localStorage.getItem('lang'); if(raw) lang = raw.replace(/"/g,''); }catch(e){}
+    if(lang!=='en') lang='ar';
+    const dark = this.ls('darkMode', false);
+    const checked={}, counters={}, timeLeft={};
+    this.D.DAYS.forEach(d=>d.groups.forEach(g=>g.items.forEach(it=>{
+      checked[it.id]=this.ls('chk_'+it.id,false);
+      counters[it.id]=this.ls('cnt_'+it.id,0);
+      if(it.type==='hold') timeLeft[it.id]=this.ls('time_'+it.id,it.target);
+    })));
+    const savedTimes = this.ls('notifTimes', null);
+    this.applyDoc(lang, dark);
+    this.setState({
+      ready:true, lang, dark, checked, counters, timeLeft,
+      times: savedTimes || this.state.times,
+      voiceOn: this.ls('voiceModeOn', false),
+      photos: this.ls('reportPhotos', []),
+      waterCount: this.ls('water_'+this.todayKey(), 0),
+      sleepHours: this.ls('sleep_'+this.todayKey(), '')
+    }, ()=> this.recordDailySnapshot());
+    if('Notification' in window && Notification.permission==='granted' && savedTimes) this.startNotifLoop();
+    this.initSwipe();
+    this.initGlobalClickSound();
+    const standalone = window.matchMedia && window.matchMedia('(display-mode: standalone)').matches || window.navigator.standalone;
+    if(!standalone && !this.ls('pwaBannerDismissed', false)) this.setState({pwaBannerShow:true});
+  }
+  componentWillUnmount(){
+    Object.values(this.intervals).forEach(i=>clearInterval(i));
+    if(this.focusInterval) clearInterval(this.focusInterval);
+    if(this._notifInterval) clearInterval(this._notifInterval);
+  }
+  applyDoc(lang, dark){
+    const html = document.documentElement;
+    html.lang = lang; html.dir = lang==='ar'?'rtl':'ltr';
+    html.classList.toggle('dark', !!dark);
+  }
+  toggleLang(){
+    const lang = this.isAr()? 'en':'ar';
+    try{ localStorage.setItem('lang', lang); }catch(e){}
+    this.applyDoc(lang, this.state.dark);
+    this.setState({lang});
+  }
+  toggleTheme(){
+    const dark = !this.state.dark;
+    this.save('darkMode', dark);
+    this.applyDoc(this.state.lang, dark);
+    this.setState({dark});
+  }
+
+  findItem(id){ for(const d of this.D.DAYS) for(const g of d.groups) for(const it of g.items) if(it.id===id) return it; return null; }
+  dayOf(id){ for(const d of this.D.DAYS) for(const g of d.groups) for(const it of g.items) if(it.id===id) return d; return null; }
+  dayPct(d, checked){
+    let done=0, total=0;
+    d.groups.forEach(g=>g.items.forEach(it=>{ total++; if(checked[it.id]) done++; }));
+    return total? done/total*100 : 0;
+  }
+
+  awardXP(id){
+    const key = id+'_'+new Date().toDateString();
+    const xpLog = this.ls('xpLog', {});
+    if(xpLog[key]) return;
+    xpLog[key]=true;
+    this.save('xpLog', xpLog);
+    this.save('lifetimeXP', this.ls('lifetimeXP',0)+1);
+  }
+  getLevelInfo(){
+    const xp = this.ls('lifetimeXP', 0);
+    const perLevel = Number(this.props.xpPerLevel ?? 15);
+    return {xp, level: Math.floor(xp/perLevel)+1, inLevel: xp%perLevel, perLevel};
+  }
+
+  toggleCheck(id){
+    const checked = {...this.state.checked};
+    const now = !checked[id];
+    checked[id] = now;
+    this.save('chk_'+id, now);
+    this.vibrate(now?12:8);
+    if(now) this.awardXP(id);
+    let celebrate = this.state.celebrate;
+    const day = this.dayOf(id);
+    if(day){
+      const pct = this.dayPct(day, checked);
+      if(pct>=100){
+        if(!this.ls('celebrated_'+day.id, false)){
+          this.save('celebrated_'+day.id, true);
+          this.recordDayCompletion();
+          this.playBeep();
+          celebrate = day;
+        }
+      } else {
+        this.save('celebrated_'+day.id, false);
+      }
+    }
+    let undoToast = this.state.undoToast;
+    if(now){
+      const it = this.findItem(id);
+      if(it){
+        undoToast = {id, ar:it.ar, en:it.en};
+        clearTimeout(this._undoT);
+        this._undoT = setTimeout(()=>this.setState(s=> s.undoToast && s.undoToast.id===id? {undoToast:null}:{}), 3200);
+      }
+    } else if(undoToast && undoToast.id===id){ undoToast = null; }
+    this.setState({checked, celebrate, undoToast}, ()=>this.recordDailySnapshot());
+  }
+  undoLastCheck(){
+    const id = this.state.undoToast && this.state.undoToast.id;
+    if(id) this.toggleCheck(id);
+    this.setState({undoToast:null});
+  }
+  changeCounter(id, delta){
+    const it = this.findItem(id);
+    const prev = this.state.counters[id]||0;
+    let v = Math.min(it.target, Math.max(0, prev+delta));
+    this.save('cnt_'+id, v);
+    this.setState(s=>({counters:{...s.counters,[id]:v}}));
+    this.vibrate(8);
+    if(prev===0 && v===1) this.speakExercise(it);
+    if(v>=it.target && !this.state.checked[id]) this.toggleCheck(id);
+  }
+
+  todayKey(){ return new Date().toDateString(); }
+  vibrate(ms){ try{ if(navigator.vibrate) navigator.vibrate(ms); }catch(e){} }
+  tipsFor(key){
+    const T = {
+      mob:{ar:'حركة صغيرة ومتحكم فيها أفضل من مدى واسع سريع — لو حسيت وخز أو ألم حاد، قلل المدى فورًا.',en:'Small, controlled range beats a fast wide range — if you feel sharp pain or tingling, reduce the range immediately.'},
+      core:{ar:'حافظ على تنفس طبيعي (متتنفسش نفسك) وشد البطن بهدوء بدل ما تقوّس الضهر.',en:'Keep breathing normally (don\'t hold your breath) and brace the core gently instead of arching the back.'},
+      str:{ar:'ادخل في الإطالة تدريجيًا لحد ما تحس بشد خفيف، من غير ألم، وثبت من غير ما ترتد.',en:'Ease into the stretch gradually to a gentle pull, never pain, and hold still without bouncing.'},
+      gym:{ar:'ابدأ بوزن تقدر تتحكم فيه بالكامل، وركّز على نزول بطيء (2-3 ثواني) قبل ما تزوّد الوزن.',en:'Start with a weight you fully control, focus on a slow lowering phase (2-3s) before adding load.'},
+      cardio:{ar:'حافظ على إيقاع تقدر تتكلم فيه براحة (Zone 2) — مش سباق.',en:'Keep a pace you can comfortably talk through (Zone 2) — not a race.'},
+    };
+    return T[key] || T.mob;
+  }
+  openDetail(id){ this.setState({detailItemId:id}); }
+  closeDetail(){ this.setState({detailItemId:null}); }
+  addWater(delta){
+    const key = 'water_'+this.todayKey();
+    const v = Math.max(0, (this.state.waterCount||0)+delta);
+    this.save(key, v);
+    this.vibrate(10);
+    this.setState({waterCount:v});
+  }
+  setSleepHours(val){
+    this.save('sleep_'+this.todayKey(), val);
+    this.setState({sleepHours:val});
+  }
+  sendToAppleHealth(){
+    const water = this.state.waterCount||0;
+    const sleep = this.state.sleepHours||'';
+    let weight = null;
+    for(const d of this.D.DAYS){ for(const g of d.groups){ for(const it of g.items){
+      if(it.sets){ const logs=this.ls('wlog_'+it.id,[]); if(logs.length){ const l=logs[logs.length-1]; if(l.date===this.todayKey() && l.weight!=null) weight=l.weight; } }
+    }}}
+    const payload = {water_cups:water, sleep_hours:sleep, weight_kg:weight, date:this.todayKey()};
+    const input = encodeURIComponent(JSON.stringify(payload));
+    const url = `shortcuts://run-shortcut?name=${encodeURIComponent('Log Spine Recovery')}&input=text&text=${input}`;
+    window.location.href = url;
+    this.setState({healthSentTick:(this.state.healthSentTick||0)+1});
+  }
+  dismissPwaBanner(){ this.save('pwaBannerDismissed', true); this.setState({pwaBannerShow:false}); }
+  isDaySkipped(dayId){ return this.ls('skipped_'+dayId+'_'+this.todayKey(), false); }
+  toggleSkipDay(dayId){
+    const now = !this.isDaySkipped(dayId);
+    this.save('skipped_'+dayId+'_'+this.todayKey(), now);
+    if(now){
+      const dates = this.ls('skippedDates', []);
+      const today = this.todayKey();
+      if(!dates.includes(today)){ dates.push(today); if(dates.length>90) dates.shift(); this.save('skippedDates', dates); }
+    }
+    this.forceUpdate();
+  }
+  playTick(){
+    try{
+      const ctx = this._clickCtx || (this._clickCtx = new (window.AudioContext||window.webkitAudioContext)());
+      const osc=ctx.createOscillator(), gain=ctx.createGain();
+      osc.type='square'; osc.frequency.value=700;
+      gain.gain.setValueAtTime(0.0001,ctx.currentTime);
+      gain.gain.exponentialRampToValueAtTime(0.06,ctx.currentTime+0.005);
+      gain.gain.exponentialRampToValueAtTime(0.0001,ctx.currentTime+0.05);
+      osc.connect(gain).connect(ctx.destination);
+      osc.start(); osc.stop(ctx.currentTime+0.06);
+    }catch(e){}
+  }
+  playClick(){
+    try{
+      const ctx = this._clickCtx || (this._clickCtx = new (window.AudioContext||window.webkitAudioContext)());
+      const osc=ctx.createOscillator(), gain=ctx.createGain();
+      osc.type='sine'; osc.frequency.value=1200;
+      gain.gain.setValueAtTime(0.0001,ctx.currentTime);
+      gain.gain.exponentialRampToValueAtTime(0.12,ctx.currentTime+0.008);
+      gain.gain.exponentialRampToValueAtTime(0.0001,ctx.currentTime+0.07);
+      osc.connect(gain).connect(ctx.destination);
+      osc.start(); osc.stop(ctx.currentTime+0.08);
+    }catch(e){}
+  }
+  initGlobalClickSound(){
+    document.addEventListener('click', e=>{
+      if(e.target.closest('button, .chk, .tab, .navbtn, .card-title, .skip-day-btn, [onclick]')) this.playClick();
+    }, true);
+  }
+  playBeep(){
+    try{
+      const ctx = new (window.AudioContext||window.webkitAudioContext)();
+      [880,1108,1320].forEach((freq,i)=>{
+        const osc=ctx.createOscillator(), gain=ctx.createGain();
+        osc.type='sine'; osc.frequency.value=freq;
+        const start=ctx.currentTime+i*0.14;
+        gain.gain.setValueAtTime(0.0001,start);
+        gain.gain.exponentialRampToValueAtTime(0.25,start+0.02);
+        gain.gain.exponentialRampToValueAtTime(0.0001,start+0.32);
+        osc.connect(gain).connect(ctx.destination);
+        osc.start(start); osc.stop(start+0.35);
+      });
+    }catch(e){}
+  }
+  fmtTime(sec){
+    sec = Math.max(0, Math.round(sec));
+    const m=Math.floor(sec/60), s=sec%60;
+    return m>0? m+':'+String(s).padStart(2,'0') : s+'s';
+  }
+  startTimer(id, target){
+    if(this.intervals[id]) return;
+    const it = this.findItem(id);
+    if(it) this.speakExercise(it);
+    let remaining = this.state.timeLeft[id];
+    if(remaining==null || remaining<=0) remaining = target;
+    this.setState(s=>({running:{...s.running,[id]:true}, timeLeft:{...s.timeLeft,[id]:remaining}}));
+    this.intervals[id] = setInterval(()=>{
+      remaining -= 1;
+      this.save('time_'+id, remaining);
+      this.setState(s=>({timeLeft:{...s.timeLeft,[id]:remaining}}));
+      if(remaining>0) this.playTick();
+      if(remaining<=0){
+        clearInterval(this.intervals[id]); delete this.intervals[id];
+        this.setState(s=>({running:{...s.running,[id]:false}}));
+        this.playBeep();
+        this.vibrate([15,60,15]);
+        if(!this.state.checked[id]) this.toggleCheck(id);
+      }
+    }, 1000);
+  }
+  resetTimer(id, target){
+    if(this.intervals[id]){ clearInterval(this.intervals[id]); delete this.intervals[id]; }
+    this.save('time_'+id, target);
+    this.setState(s=>({running:{...s.running,[id]:false}, timeLeft:{...s.timeLeft,[id]:target}}));
+  }
+
+  recordDayCompletion(){
+    const today = new Date().toDateString();
+    const dates = this.ls('completedDates', []);
+    if(!dates.includes(today)){ dates.push(today); if(dates.length>90) dates.shift(); this.save('completedDates', dates); }
+  }
+  computeStreak(){
+    const dates = this.ls('completedDates', []).concat(this.ls('skippedDates', []));
+    if(!dates.length) return 0;
+    const set = new Set(dates);
+    let streak=0, cursor=new Date();
+    if(!set.has(cursor.toDateString())) cursor.setDate(cursor.getDate()-1);
+    while(set.has(cursor.toDateString())){ streak++; cursor.setDate(cursor.getDate()-1); }
+    return streak;
+  }
+  recordDailySnapshot(){
+    if(!this.D) return;
+    let done=0, total=0;
+    this.D.DAYS.forEach(d=>d.groups.forEach(g=>g.items.forEach(it=>{ total++; if(this.state.checked[it.id]) done++; })));
+    const pct = total? Math.round(done/total*100):0;
+    const today = new Date().toDateString();
+    const hist = this.ls('weekPctHistory', []);
+    const idx = hist.findIndex(h=>h.date===today);
+    if(idx>=0) hist[idx].pct=pct; else hist.push({date:today,pct});
+    if(hist.length>30) hist.shift();
+    try{ localStorage.setItem('weekPctHistory', JSON.stringify(hist)); }catch(e){}
+  }
+
+  setPain(id, level){ this.setState(s=>({painSel:{...s.painSel,[id]:level}})); }
+  logExercise(id){
+    const weightStr = this.state.wInputs[id];
+    const weight = weightStr? parseFloat(weightStr): null;
+    const pain = this.state.painSel[id] || null;
+    if(weight===null && pain===null) return;
+    const logs = this.ls('wlog_'+id, []);
+    const today = new Date().toDateString();
+    const existingIdx = logs.findIndex(l=>l.date===today);
+    const entry = {date:today, weight: weight!==null? weight : (logs.length? logs[logs.length-1].weight:null), pain};
+    if(existingIdx>=0) logs[existingIdx]=entry; else logs.push(entry);
+    if(logs.length>60) logs.shift();
+    this.save('wlog_'+id, logs);
+    this.setState(s=>({wInputs:{...s.wInputs,[id]:''}, notesTick:s.notesTick+1}));
+  }
+  adaptiveNote(id){
+    const logs = this.ls('wlog_'+id, []);
+    if(!logs.length) return null;
+    const last = logs[logs.length-1];
+    if(last.pain>=3) return {cls:'warn-note', text:this.t('حسيت بألم أعلى المرة دي — يفضل تقلل الوزن أو الحمل في المرة الجاية وترجع تدريجيًا','You logged higher pain this time — consider reducing the weight/load next time and progressing gradually')};
+    if(last.pain===1 && logs.length>=2) return {cls:'ok-note', text:this.t('مفيش ألم مسجل وده كويس — لو حاسس إن التمرين بقى سهل ممكن تزود شوية الأسبوع الجاي','No pain logged — nice. If it felt easy, you can progress slightly next week')};
+    return null;
+  }
+
+  navFor(dayId){
+    return dayId==='nutrition'?'nutrition': dayId==='supplements'?'supplements': dayId==='progress'?'progress': dayId==='coach'?'coach':'week';
+  }
+  switchDay(dayId, nav){
+    if(dayId==='progress') this.recordDailySnapshot();
+    if(dayId===this.state.currentDay) return;
+    this.setState({currentDay:dayId, nav: nav || this.navFor(dayId), navPulse:true});
+    clearTimeout(this._navPulseT);
+    this._navPulseT = setTimeout(()=>this.setState({navPulse:false}), 350);
+    requestAnimationFrame(()=>{
+      const tabs = document.querySelector('.tabs');
+      const activeTab = tabs && tabs.querySelector('.tab.active');
+      if(activeTab) activeTab.scrollIntoView({behavior:'smooth', block:'nearest', inline:'center'});
+    });
+  }
+  scrollTop(){ window.scrollTo({top:0, behavior:'smooth'}); }
+  goToday(){
+    const idx = new Date().getDay();
+    this.switchDay(this.D.DAYS[idx%7].id, 'today');
+    this.scrollTop();
+  }
+  goWeek(){ this.setState({nav:'week'}); this.scrollTop(); }
+  goTab(id){ this.switchDay(id); this.scrollTop(); }
+
+  jumpToItem(dayId, itemId){
+    this.setState({query:''});
+    this.switchDay(dayId);
+    setTimeout(()=>{
+      const card = document.getElementById('card_'+itemId);
+      if(card){
+        const y = card.getBoundingClientRect().top + window.scrollY - 150;
+        window.scrollTo({top:y, behavior:'smooth'});
+        card.classList.remove('flash'); void card.offsetWidth; card.classList.add('flash');
+      }
+    }, 300);
+  }
+
+  startFocusMode(){
+    let day = this.D.DAYS.find(d=>d.id===this.state.currentDay);
+    if(!day || !day.groups.length) day = this.D.DAYS[new Date().getDay()%7];
+    const list = [];
+    day.groups.forEach(g=>g.items.forEach(it=>{ if(it.type==='reps'||it.type==='hold') list.push(it); }));
+    if(!list.length) return;
+    let idx = list.findIndex(it=>!this.state.checked[it.id]);
+    if(idx<0) idx=0;
+    if(this.focusInterval){ clearInterval(this.focusInterval); this.focusInterval=null; }
+    const it = list[idx];
+    this.speakExercise(it);
+    this.setState({focus:{open:true, idx, phase:'exercise', list, dayId:day.id, remaining: it.type==='hold'? it.target:0, holdRunning:false}});
+  }
+  exitFocus(){
+    if(this.focusInterval){ clearInterval(this.focusInterval); this.focusInterval=null; }
+    if(window.speechSynthesis) window.speechSynthesis.cancel();
+    this.setState(s=>({focus:{...s.focus, open:false, holdRunning:false}}));
+  }
+  restSecondsVal(){ return Number(this.props.restSeconds ?? 60); }
+  startFocusHold(){
+    const f = this.state.focus;
+    if(this.focusInterval || f.phase!=='exercise') return;
+    let remaining = f.remaining || (f.list[f.idx]? f.list[f.idx].target:0);
+    this.setState(s=>({focus:{...s.focus, holdRunning:true}}));
+    this.focusInterval = setInterval(()=>{
+      remaining--;
+      this.setState(s=>({focus:{...s.focus, remaining}}));
+      if(remaining>0) this.playTick();
+      if(remaining<=0){
+        clearInterval(this.focusInterval); this.focusInterval=null;
+        this.playBeep();
+        this.completeFocusStep();
+      }
+    }, 1000);
+  }
+  completeFocusStep(){
+    if(this.focusInterval){ clearInterval(this.focusInterval); this.focusInterval=null; }
+    const f = this.state.focus;
+    const it = f.list[f.idx];
+    if(it && !this.state.checked[it.id]) this.toggleCheck(it.id);
+    const idx = f.idx+1;
+    const rest = idx < f.list.length && it && it.sets;
+    if(rest){
+      let remaining = this.restSecondsVal();
+      this.setState(s=>({focus:{...s.focus, idx, phase:'rest', remaining, holdRunning:false}}));
+      this.focusInterval = setInterval(()=>{
+        remaining--;
+        this.setState(s=>({focus:{...s.focus, remaining}}));
+        if(remaining>0) this.playTick();
+        if(remaining<=0){
+          clearInterval(this.focusInterval); this.focusInterval=null;
+          this.playBeep();
+          this.enterFocusExercise(idx);
+        }
+      }, 1000);
+    } else {
+      this.enterFocusExercise(idx);
+    }
+  }
+  enterFocusExercise(idx){
+    const f = this.state.focus;
+    const it = f.list[idx];
+    if(it) this.speakExercise(it); else this.playBeep();
+    this.setState(s=>({focus:{...s.focus, idx, phase:'exercise', remaining: it && it.type==='hold'? it.target:0, holdRunning:false}}));
+  }
+  continueToNextDay(){
+    const curId = this.state.focus.dayId;
+    const idx = this.D.DAYS.findIndex(d=>d.id===curId);
+    let next = null;
+    for(let i=idx+1;i<this.D.DAYS.length;i++){ if(this.D.DAYS[i].groups.length){ next=this.D.DAYS[i]; break; } }
+    if(!next) return;
+    const list = [];
+    next.groups.forEach(g=>g.items.forEach(it=>{ if(it.type==='reps'||it.type==='hold') list.push(it); }));
+    if(!list.length) return;
+    this.switchDay(next.id);
+    const it = list[0];
+    this.speakExercise(it);
+    this.setState({focus:{open:true, idx:0, phase:'exercise', list, dayId:next.id, remaining: it.type==='hold'? it.target:0, holdRunning:false}});
+  }
+  hasNextDay(){
+    const curId = this.state.focus.dayId;
+    const idx = this.D.DAYS.findIndex(d=>d.id===curId);
+    return this.D.DAYS.slice(idx+1).some(d=>d.groups.length);
+  }
+  skipRest(){
+    if(this.focusInterval){ clearInterval(this.focusInterval); this.focusInterval=null; }
+    this.enterFocusExercise(this.state.focus.idx);
+  }
+
+  toggleVoice(){
+    const on = !this.state.voiceOn;
+    this.save('voiceModeOn', on);
+    this.setState({voiceOn:on});
+  }
+  speakExercise(it){
+    if(!this.state.voiceOn || !('speechSynthesis' in window)) return;
+    const isAr = this.isAr();
+    const name = isAr? it.ar : it.en;
+    let text = name;
+    if(it.type==='hold') text = isAr? `${name}، ثبات ${it.target} ثانية` : `${name}, hold for ${it.target} seconds`;
+    else if(it.type==='reps') text = isAr? `${name}، ${it.target} تكرار` : `${name}, ${it.target} reps`;
+    try{
+      window.speechSynthesis.cancel();
+      const u = new SpeechSynthesisUtterance(text);
+      u.lang = isAr? 'ar-EG':'en-US'; u.rate = 0.95;
+      window.speechSynthesis.speak(u);
+    }catch(e){}
+  }
+
+  coachAnalyze(){
+    const hist = this.ls('weekPctHistory', []);
+    const last7 = hist.slice(-7), prev7 = hist.slice(-14,-7);
+    const avg = arr => arr.length? Math.round(arr.reduce((s,h)=>s+h.pct,0)/arr.length): null;
+    const exSummaries = [];
+    this.D.DAYS.forEach(d=>d.groups.forEach(g=>g.items.forEach(it=>{
+      if(!it.sets) return;
+      const logs = this.ls('wlog_'+it.id, []);
+      if(!logs.length) return;
+      const recent = logs.slice(-5);
+      const painVals = recent.filter(l=>l.pain!=null).map(l=>l.pain);
+      const avgPain = painVals.length? painVals.reduce((s,p)=>s+p,0)/painVals.length: null;
+      const weights = recent.filter(l=>l.weight!=null).map(l=>l.weight);
+      exSummaries.push({item:it, logs, avgPain,
+        weightTrend: weights.length>=2? weights[weights.length-1]-weights[0]:0,
+        lastWeight: weights.length? weights[weights.length-1]:null});
+    })));
+    const painByWeekday = {};
+    this.D.DAYS.forEach(d=>d.groups.forEach(g=>g.items.forEach(it=>{
+      this.ls('wlog_'+it.id, []).forEach(l=>{
+        if(l.pain>=3){ const wd=new Date(l.date).getDay(); painByWeekday[wd]=(painByWeekday[wd]||0)+1; }
+      });
+    })));
+    let worstWeekday=null, worstCount=0;
+    Object.keys(painByWeekday).forEach(wd=>{ if(painByWeekday[wd]>worstCount){ worstCount=painByWeekday[wd]; worstWeekday=Number(wd);} });
+    return {avg7:avg(last7), avgPrev7:avg(prev7), streak:this.computeStreak(), exSummaries, worstWeekday, worstCount, dataDays:hist.length};
+  }
+  coachBuildPlan(a){
+    const isAr = this.isAr();
+    const WD_AR=['الأحد','الاتنين','التلات','الأربع','الخميس','الجمعة','السبت'];
+    const WD_EN=['Sunday','Monday','Tuesday','Wednesday','Thursday','Friday','Saturday'];
+    const cards=[];
+    if(a.avg7!==null){
+      let msg, tone;
+      if(a.avgPrev7!==null && a.avg7 > a.avgPrev7+5){
+        msg = isAr? `التزامك طالع لفوق: ${a.avgPrev7}% ← ${a.avg7}% الأسبوع ده. كمّل بنفس الإيقاع.` : `Your consistency is climbing: ${a.avgPrev7}% → ${a.avg7}% this week. Keep this rhythm.`;
+        tone='ok';
+      } else if(a.avgPrev7!==null && a.avg7 < a.avgPrev7-5){
+        msg = isAr? `التزامك نزل من ${a.avgPrev7}% لـ ${a.avg7}%. مش مشكلة — رجّع الإيقاع بأبسط حاجة: خلّص الحركة اليومية بس (10 دقايق) لمدة 3 أيام ورا بعض.` : `Consistency dipped from ${a.avgPrev7}% to ${a.avg7}%. No problem — rebuild momentum with the simplest thing: just the daily mobility (10 min) for 3 days in a row.`;
+        tone='warn';
+      } else {
+        msg = isAr? `متوسط التزامك ${a.avg7}% الأسبوع ده — ثابت. الثبات أهم من الكمال في التأهيل.` : `Your average this week is ${a.avg7}% — steady. In rehab, steady beats perfect.`;
+        tone='ok';
+      }
+      cards.push({title:this.t('قراءة الأسبوع','Week Read'), msg, tone});
+    } else {
+      cards.push({title:this.t('قراءة الأسبوع','Week Read'), msg:this.t('لسه مفيش بيانات كفاية — استخدم التطبيق كام يوم وارجعلي.','Not enough data yet — use the app for a few days and come back.'), tone:'ok'});
+    }
+    a.exSummaries.forEach(s=>{
+      const name = isAr? s.item.ar : s.item.en;
+      if(s.avgPain!==null && s.avgPain>=2.5){
+        cards.push({title:name, tone:'warn',
+          msg: isAr? `الألم في التمرين ده عالي باستمرار. الأسبوع الجاي: قلل الوزن 20-30% (${s.lastWeight? 'من '+s.lastWeight+' لحوالي '+Math.round(s.lastWeight*0.75*2)/2+' كجم':''}) وركز على البطء والتحكم. لو الألم فضل عالي حتى بالوزن الأقل، وقّفه وقول لدكتورك.` :
+            `Pain on this exercise is consistently high. Next week: cut the load 20-30% (${s.lastWeight? 'from '+s.lastWeight+' to ~'+Math.round(s.lastWeight*0.75*2)/2+'kg':''}) and focus on slow control. If pain stays high even lighter, pause it and tell your doctor.`});
+      } else if(s.avgPain!==null && s.avgPain<=1.3 && s.weightTrend>=0 && s.logs.length>=3){
+        const suggested = s.lastWeight? Math.round((s.lastWeight*1.05)*2)/2 : null;
+        cards.push({title:name, tone:'ok',
+          msg: isAr? `مفيش ألم تقريبًا وأنت مستقر عليه من ${s.logs.length} تسجيلات. جاهز لزيادة صغيرة: ${suggested? s.lastWeight+' ← '+suggested+' كجم':'زوّد ~5%'} أو تكرار إضافي لكل سيت.` :
+            `Almost no pain and you've been stable across ${s.logs.length} logs. Ready for a small bump: ${suggested? s.lastWeight+' → '+suggested+'kg':'add ~5%'} or one extra rep per set.`});
+      }
+    });
+    if(a.worstWeekday!==null && a.worstCount>=2){
+      const dayName = isAr? WD_AR[a.worstWeekday] : WD_EN[a.worstWeekday];
+      cards.push({title:this.t('نمط لاحظته','Pattern I Noticed'), tone:'warn',
+        msg: isAr? `الألم العالي بيتسجل أكتر حاجة يوم ${dayName} (${a.worstCount} مرات). فكّر إيه اللي بيحصل قبله — نوم أقل؟ قعدة طويلة؟ يوم رجل تقيل؟ جرّب تخفف حمل اليوم اللي قبله وشوف الفرق.` :
+          `High pain logs cluster on ${dayName} (${a.worstCount} times). Think about what happens before it — less sleep? Long sitting? A heavy leg day? Try lightening the day before and see if it changes.`});
+    }
+    if(a.streak>=3){
+      cards.push({title:this.t('السلسلة','Streak'), tone:'ok', msg:this.t(`${a.streak} أيام متتالية — الاستمرارية دي هي اللي بتبني ضهر قوي. حافظ عليها حتى لو بيوم مخفف.`,`${a.streak} days in a row — this consistency is what builds a strong back. Protect it, even with a light day.`)});
+    } else if(a.dataDays>=5 && a.streak===0){
+      cards.push({title:this.t('نصيحة اليوم',"Today's Nudge"), tone:'warn', msg:this.t('ابدأ سلسلة جديدة النهاردة بأصغر خطوة: افتح وضع التركيز وخلّص الحركة اليومية بس. اليوم الكامل مش شرط.',"Start a new streak today with the smallest step: open focus mode and finish just the mobility routine. A full day isn't required.")});
+    }
+    const hist = this.ls('weekPctHistory', []);
+    if(hist.length>=7){
+      const byWd = {};
+      hist.forEach(x=>{ const wd=new Date(x.date).getDay(); (byWd[wd]=byWd[wd]||[]).push(x.pct); });
+      let bestWd=null, bestAvg=-1;
+      Object.keys(byWd).forEach(wd=>{ const av=byWd[wd].reduce((s,p)=>s+p,0)/byWd[wd].length; if(av>bestAvg){bestAvg=av; bestWd=Number(wd);} });
+      if(bestWd!==null && bestAvg>=50){
+        cards.push({title:this.t('أقوى أيامك','Your Strongest Day'), tone:'ok',
+          msg: isAr? `يوم ${WD_AR[bestWd]} هو أعلى أيامك التزامًا (${Math.round(bestAvg)}%). حط فيه أصعب تمريناتك واستغل الطاقة دي.` :
+            `${WD_EN[bestWd]} is your most consistent day (${Math.round(bestAvg)}%). Schedule your hardest sessions there.`});
+      }
+    }
+    const readyCount = a.exSummaries.filter(s=>s.avgPain!==null && s.avgPain<=1.3 && s.logs.length>=3).length;
+    if(readyCount>=3){
+      cards.push({title:this.t('أسبوع تقدم','Progression Week'), tone:'ok',
+        msg:this.t(`${readyCount} تمارين مستقرة بدون ألم — الأسبوع الجاي مناسب لزيادات صغيرة في الحمل (2.5-5%) عليهم كلهم.`,`${readyCount} exercises are stable and pain-free — next week is a good time for small load increases (2.5-5%) across them.`)});
+    }
+    if(a.streak>=10){
+      cards.push({title:this.t('نصيحة ديلود','Deload Tip'), tone:'warn',
+        msg:this.t(`${a.streak} يوم متواصل — جسمك بيبني في الراحة. خصص 2-3 أيام أخف (نص الأحمال) الأسبوع ده عشان تكمل أقوى.`,`${a.streak} straight days — the body adapts during recovery. Take 2-3 lighter days (half loads) this week to come back stronger.`)});
+    }
+    const skipped = this.ls('skippedDates', []).length;
+    if(skipped>=2){
+      cards.push({title:this.t('أيام الراحة','Rest Days'), tone:'ok',
+        msg:this.t(`سجّلت ${skipped} يوم راحة موثّق — ده أفضل من إنك تكسر الروتين بصمت وتحس بالذنب. استمر تسجّلها براحة.`,`You've logged ${skipped} tracked rest day(s) — better than silently breaking the routine and feeling guilty. Keep logging them honestly.`)});
+    }
+    return cards;
+  }
+
+  exportBackup(){
+    const data={};
+    for(let i=0;i<localStorage.length;i++){ const k=localStorage.key(i); data[k]=localStorage.getItem(k); }
+    const blob = new Blob([JSON.stringify(data)],{type:'application/json'});
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href=url; a.download='spine-recovery-backup-'+new Date().toISOString().slice(0,10)+'.json';
+    document.body.appendChild(a); a.click(); a.remove();
+    URL.revokeObjectURL(url);
+  }
+  importBackup(e){
+    const file = e.target.files[0];
+    if(!file) return;
+    const reader = new FileReader();
+    reader.onload = ()=>{
+      try{
+        const data = JSON.parse(reader.result);
+        Object.keys(data).forEach(k=>localStorage.setItem(k,data[k]));
+        location.reload();
+      }catch(err){ alert(this.t('ملف النسخة الاحتياطية غير صالح','Invalid backup file')); }
+    };
+    reader.readAsText(file);
+  }
+  addPhoto(e){
+    const file = e.target.files[0];
+    if(!file) return;
+    const reader = new FileReader();
+    reader.onload = ()=>{
+      const img = new Image();
+      img.onload = ()=>{
+        const maxW=480, scale=Math.min(1,maxW/img.width);
+        const canvas = document.createElement('canvas');
+        canvas.width=img.width*scale; canvas.height=img.height*scale;
+        canvas.getContext('2d').drawImage(img,0,0,canvas.width,canvas.height);
+        const compressed = canvas.toDataURL('image/jpeg',0.72);
+        this.setState({pendingPhoto:compressed, photoTagWeight:'', photoTagType:'progress'});
+      };
+      img.src = reader.result;
+    };
+    reader.readAsDataURL(file);
+    e.target.value = '';
+  }
+  savePendingPhoto(){
+    const data = this.state.pendingPhoto;
+    if(!data) return;
+    const photos = this.ls('reportPhotos',[]);
+    const weight = this.state.photoTagWeight? parseFloat(this.state.photoTagWeight) : null;
+    photos.push({date:new Date().toISOString(), data, type:this.state.photoTagType||'progress', weight});
+    if(photos.length>40) photos.shift();
+    try{
+      localStorage.setItem('reportPhotos', JSON.stringify(photos));
+      this.showSaved();
+      this.setState({photos, pendingPhoto:null});
+    }catch(err){
+      alert(this.t('مساحة التخزين امتلأت — احذف صور قديمة أو صدّر نسخة احتياطية الأول','Storage is full — delete some older photos or export a backup first'));
+    }
+  }
+  cancelPendingPhoto(){ this.setState({pendingPhoto:null}); }
+  photoProgressAnalysis(){
+    const photos = this.ls('reportPhotos', []);
+    const weighted = photos.filter(p=>p.weight!=null).sort((a,b)=>new Date(a.date)-new Date(b.date));
+    if(weighted.length<2) return null;
+    const first = weighted[0], last = weighted[weighted.length-1];
+    const diff = Math.round((last.weight-first.weight)*10)/10;
+    return {count:weighted.length, first, last, diff};
+  }
+  genReport(){
+    const isAr = this.isAr();
+    const hist = this.ls('weekPctHistory',[]).slice(-30);
+    const streak = this.computeStreak();
+    const lvl = this.getLevelInfo();
+    let weightRows='';
+    this.D.DAYS.forEach(d=>d.groups.forEach(g=>g.items.forEach(it=>{
+      if(!it.sets) return;
+      const logs = this.ls('wlog_'+it.id,[]);
+      if(!logs.length) return;
+      const name = isAr? it.ar : it.en;
+      const rows = logs.slice(-6).map(l=>`${new Date(l.date).toLocaleDateString()}: ${l.weight!=null?l.weight+'kg':'—'}${l.pain?' (pain '+l.pain+'/3)':''}`).join('<br>');
+      weightRows += `<tr><td>${name}</td><td>${rows}</td></tr>`;
+    })));
+    const avgPct = hist.length? Math.round(hist.reduce((s,h)=>s+h.pct,0)/hist.length):0;
+    const win = window.open('','_blank');
+    const printTag = '<scr'+'ipt>window.onload=()=>window.print();</scr'+'ipt>';
+    win.document.write(`
+      <html dir="${isAr?'rtl':'ltr'}"><head><meta charset="UTF-8"><title>${isAr?'التقرير الشهري':'Monthly Report'}</title>
+      <style>
+        body{font-family:Arial,sans-serif;padding:30px;color:#1c2620;}
+        h1{color:#1a5c3f;} table{width:100%;border-collapse:collapse;margin-top:16px;}
+        th,td{border:1px solid #ddd;padding:8px;text-align:${isAr?'right':'left'};font-size:.85em;}
+        th{background:#e5f2eb;} .stat{display:inline-block;margin-inline-end:24px;margin-bottom:14px;}
+        .stat b{font-size:1.4em;color:#1a5c3f;display:block;}
+      </style></head><body>
+      <h1>${isAr?'تقرير المتابعة الشهري':'Monthly Progress Report'}</h1>
+      <p>${isAr?'تاريخ التقرير':'Report date'}: ${new Date().toLocaleDateString()}</p>
+      <div class="stat"><b>${avgPct}%</b>${isAr?'متوسط الالتزام (30 يوم)':'Avg consistency (30 days)'}</div>
+      <div class="stat"><b>${streak}</b>${isAr?'يوم متتالي':'day streak'}</div>
+      <div class="stat"><b>${lvl.level}</b>${isAr?'المستوى الحالي':'Current level'}</div>
+      <h3>${isAr?'الأوزان المسجلة':'Logged Weights'}</h3>
+      <table><tr><th>${isAr?'التمرين':'Exercise'}</th><th>${isAr?'آخر السجلات':'Recent Entries'}</th></tr>${weightRows || '<tr><td colspan=2>'+(isAr?'لا يوجد':'None')+'</td></tr>'}</table>
+      <p style="margin-top:30px;font-size:.75em;color:#7c8a80;">${isAr?'هذا التقرير مُنشأ من بيانات المستخدم الذاتية، وليس تقييمًا طبيًا.':'This report is generated from self-tracked user data and is not a medical assessment.'}</p>
+      ${printTag}
+      </body></html>`);
+    win.document.close();
+  }
+
+  enableNotifications(){
+    const times = this.state.times;
+    this.save('notifTimes', times);
+    if(!('Notification' in window)){
+      this.setState({notifStatus:{ok:false, text:this.t('الإشعارات مش مدعومة في المتصفح ده','Notifications are not supported in this browser')}});
+      return;
+    }
+    Notification.requestPermission().then(perm=>{
+      if(perm==='granted'){
+        this.setState({notifStatus:{ok:true, text:this.t('✓ تم التفعيل — التذكيرات هتوصلك طول ما الصفحة مفتوحة','✓ Enabled — reminders will fire while this page stays open')}});
+        this.startNotifLoop();
+        setTimeout(()=>this.setState({sheetOpen:false}), 1400);
+      } else {
+        this.setState({notifStatus:{ok:false, text:this.t('محتاج تسمح بالإشعارات من إعدادات المتصفح/الجهاز','Please allow notifications in your browser/device settings')}});
+      }
+    });
+  }
+  startNotifLoop(){
+    if(this._notifInterval) clearInterval(this._notifInterval);
+    this._notifInterval = setInterval(()=>this.checkNotifTimes(), 20000);
+    this.checkNotifTimes();
+  }
+  checkNotifTimes(){
+    const times = this.ls('notifTimes', null);
+    if(!times) return;
+    const REMINDER_LABELS = {
+      mob:{ar:'وقت الحركة اليومية',en:'Time for Daily Mobility'},
+      breakfast:{ar:'وقت الفطار',en:'Time for Breakfast'},
+      snack1:{ar:'وقت سناك 1',en:'Time for Snack 1'},
+      lunch:{ar:'وقت الغدا',en:'Time for Lunch'},
+      gym:{ar:'وقت الجيم',en:'Time for Gym'},
+      snack2:{ar:'وقت سناك 2',en:'Time for Snack 2'},
+      dinner:{ar:'وقت العشا',en:'Time for Dinner'},
+    };
+    const now = new Date();
+    const hhmm = now.toTimeString().slice(0,5);
+    const todayStr = now.toDateString();
+    let log = this.ls('notifFiredLog', {});
+    Object.keys(times).forEach(key=>{
+      if(times[key]===hhmm && log[key]!==todayStr){
+        const isAr = this.isAr();
+        const label = REMINDER_LABELS[key]? REMINDER_LABELS[key][isAr?'ar':'en'] : key;
+        try{ new Notification(label, {body: isAr?'افتح التطبيق وسجّل إنجازك':'Open the app and log it'}); }catch(e){}
+        this.playBeep();
+        log[key]=todayStr;
+        this.save('notifFiredLog', log);
+      }
+    });
+  }
+
+  initSwipe(){
+    const panelsEl = document.getElementById('panels');
+    if(!panelsEl) return;
+    let startX=0, startY=0, touching=false;
+    panelsEl.addEventListener('touchstart', e=>{
+      if(e.touches.length!==1) return;
+      startX=e.touches[0].clientX; startY=e.touches[0].clientY; touching=true;
+    }, {passive:true});
+    panelsEl.addEventListener('touchend', e=>{
+      if(!touching) return;
+      touching=false;
+      const dx=e.changedTouches[0].clientX-startX, dy=e.changedTouches[0].clientY-startY;
+      if(Math.abs(dx)<60 || Math.abs(dx)<Math.abs(dy)*1.5) return;
+      const idx = this.D.DAYS.findIndex(d=>d.id===this.state.currentDay);
+      let dir = dx<0? 1:-1;
+      if(document.documentElement.dir==='rtl') dir = -dir;
+      const nextIdx = idx+dir;
+      if(nextIdx>=0 && nextIdx<this.D.DAYS.length) this.switchDay(this.D.DAYS[nextIdx].id);
+    }, {passive:true});
+  }
+
+  renderVals(){
+    const D = this.D;
+    const S = this.state;
+    const isAr = S.lang!=='en';
+    const base = {
+      appName: this.props.appName || (isAr?'نظام تأهيل العمود الفقري':'Spine Recovery System'),
+      toggleTheme:()=>this.toggleTheme(), toggleLang:()=>this.toggleLang(),
+      themeIcon:null, flameIcon:null, searchIcon:null,
+      showStreak:false, streakText:'',
+      ringDayOffset:'226.2', ringWeekOffset:'226.2', ringDayPct:'0%', ringWeekPct:'0%', ringDayComplete:'', ringWeekComplete:'',
+      query:S.query, onSearch:e=>this.setState({query:e.target.value}),
+      searchPlaceholder: isAr?'دور على أي تمرين...':'Search any exercise...',
+      searchResults:[], searchShowCls:'', searchEmpty:false, noResultsText: isAr?'مفيش نتائج':'No results',
+      suggestShow:false, suggestTitle:'', suggestSub:'', suggestGo:()=>{}, suggestArrow: isAr?'◀':'▶',
+      weeklyShow:false, weeklyTitle:'', weeklyAvg:'', weeklyAvgLbl:'', weeklyFull:'', weeklyFullLbl:'', weeklyStreak:'', weeklyStreakLbl:'',
+      tabs:[], days:[],
+      progressActiveCls:'', coachActiveCls:'',
+      saveCls: S.saveShow?'show':'',
+      sheetOpenCls: S.sheetOpen?'open':'', closeSettings:()=>this.setState({sheetOpen:false}),
+      openSettings:()=>this.setState({sheetOpen:true, nav:'settings'}),
+      settingRows:[], enableNotifications:()=>this.enableNotifications(),
+      notifOkCls: S.notifStatus && S.notifStatus.ok?'ok':'', notifStatusText: S.notifStatus? S.notifStatus.text:'',
+      emergencyOpenCls: S.emergencyOpen?'open':'',
+      openEmergency:()=>this.setState({emergencyOpen:true}), closeEmergency:()=>this.setState({emergencyOpen:false}),
+      goToday:()=>this.goToday(), goWeek:()=>this.goWeek(),
+      goNutrition:()=>this.goTab('nutrition'), goSupps:()=>this.goTab('supplements'),
+      goCoach:()=>this.goTab('coach'), goProgress:()=>this.goTab('progress'),
+      navTodayCls:S.nav==='today'?'active':'', navWeekCls:S.nav==='week'?'active':'', navNutritionCls:S.nav==='nutrition'?'active':'',
+      navSuppsCls:S.nav==='supplements'?'active':'', navCoachCls:S.nav==='coach'?'active':'', navProgressCls:S.nav==='progress'?'active':'', navSettingsCls:S.nav==='settings'?'active':'',
+      startFocusMode:()=>this.startFocusMode(), exitFocus:()=>this.exitFocus(),
+      focusOpenCls:'', focusCount:'', focusDone:false, focusRest:false, focusExercise:false,
+      focusDoneText:'', focusOkText:'', restLabel:'', restRemaining:0, upNextText:'', focusName:'',
+      focusPhaseTag:'', focusDayTag:'', focusShowNextDay:false, focusNextDayText:'', continueToNextDay:()=>this.continueToNextDay(),
+      skipRest:()=>this.skipRest(), skipRestText:'', focusAnim:null, focusTarget:'', focusIsHold:false,
+      focusTimeLabel:'', focusShowStart:false, startFocusHold:()=>this.startFocusHold(), startText:'',
+      completeFocusStep:()=>this.completeFocusStep(), focusDoneBtnText:'', focusHasVid:false, focusVidUrl:'', videoText: isAr?'فيديو':'video',
+      celebrateShow:!!S.celebrate, closeCelebrate:()=>this.setState({celebrate:null}),
+      celebrateTitle:'', celebrateMsg:'', celebrateBtn:'', coreIcon:null, trophyIcon:null,
+      homeIcon:null, calIcon:null, nutIcon:null, supIcon:null, coachNavIcon:null, chartIcon:null, setIcon:null, sosIcon:null, fabPlayIcon:null, cameraIcon:null, coachIcon:null,
+      levelTitle:'', levelBarW:0, levelSub:'', chartTitle:'', chartBars:[], chartEmpty:false, noDataText:'',
+      streakCardTitle:'', streakCardSub:'', weightsTitle:'', weightRows:[], weightsEmpty:false, weightsEmptyText:'',
+      photosTitle:'', photosSub:'', photoThumbs:[], photosEmpty:false, photosEmptyText:'',
+      pickPhoto:()=>{const el=document.getElementById('photoFile'); if(el) el.click();},
+      addPhoto:e=>this.addPhoto(e),
+      pendingShow:false, pendingImgEl:null, tagWeightVal:'', tagWeightPh:'', onTagWeight:()=>{},
+      tagTypeProgress:'', tagTypeReport:'', setTagProgress:()=>{}, setTagReport:()=>{},
+      savePending:()=>this.savePendingPhoto(), cancelPending:()=>this.cancelPendingPhoto(),
+      photoAnalysisShow:false, photoAnalysisText:'',
+      voiceTitle:'', voiceSub:'', voiceBtnText:'', toggleVoice:()=>this.toggleVoice(),
+      reportTitle:'', reportSub:'', reportBtnText:'', genReport:()=>this.genReport(),
+      backupTitle:'', backupSub:'', exportText:'', importText:'',
+      exportBackup:()=>this.exportBackup(),
+      pickImport:()=>{const el=document.getElementById('importFile'); if(el) el.click();},
+      importBackup:e=>this.importBackup(e),
+      coachTitle:'', coachSub:'', coachCards:[], coachDisclaimer:'',
+      pwaBannerShow:false, pwaBannerText:'', pwaBannerSub:'', dismissPwa:()=>this.dismissPwaBanner(),
+      waterLabel:'', waterCount:0, waterAdd:()=>this.addWater(1), waterSub:()=>this.addWater(-1),
+      sleepLabel:'', sleepVal:'', onSleepChange:e=>this.setSleepHours(e.target.value),
+      detailShow:false, detailTitle:'', detailSub:'', detailTip:'', closeDetail:()=>this.closeDetail(),
+      skipBtnText:'', skipBtnCls:'', toggleSkip:()=>{},
+      healthBtnText:'', healthHelpText:'', sendToHealth:()=>this.sendToAppleHealth(),
+      undoShowCls:'', undoText:'', undoBtnText:'', undoClick:()=>this.undoLastCheck(),
+      statDayLbl:'', statDayVal:'', statWeekLbl:'', statWeekVal:'', statStreakLbl:'', statStreakVal:'',
+    };
+    if(!D || !S.ready) return base;
+    base.pwaBannerShow = S.pwaBannerShow;
+    base.pwaBannerText = isAr?'ثبّت التطبيق على شاشتك الرئيسية':'Install this app on your home screen';
+    base.pwaBannerSub = isAr?'من قائمة المتصفح اختر "إضافة للشاشة الرئيسية" لتجربة أسرع وإشعارات أفضل':'From your browser menu choose "Add to Home Screen" for a faster experience and better reminders';
+    const waterGoal = Number(this.props.waterGoal ?? 8);
+    base.waterLabel = (isAr?'💧 كوباية ماء':'💧 Water cups') + ' ('+S.waterCount+'/'+waterGoal+')';
+    base.waterCount = S.waterCount;
+    base.sleepLabel = isAr?'😴 ساعات النوم':'😴 Sleep hours';
+    base.sleepVal = S.sleepHours;
+    base.healthBtnText = isAr?'🍏 أرسل لـ Apple Health':'🍏 Send to Apple Health';
+    base.healthHelpText = isAr?'محتاج مرة واحدة بس تعمل Shortcut اسمه "Log Spine Recovery" على جهازك (Shortcuts app) يستقبل البيانات ويحفظها في تطبيق الصحة — بعدها الزرار ده هيشتغل تلقائي كل مرة.':'One-time setup: create a Shortcut named "Log Spine Recovery" in the Shortcuts app that receives this data and logs it into Health — after that, this button works automatically every time.';
+    const I = D.ICONS;
+    base.themeIcon = this.svg(S.dark? I.sun : I.moon);
+    base.flameIcon = React.createElement('span',{className:'flame',style:{display:'inline-flex'}},this.svg(I.flame));
+    base.searchIcon = this.svg(I.search);
+    base.homeIcon=this.svg(I.home); base.calIcon=this.svg(I.calendar); base.nutIcon=this.svg(I.nutrition);
+    base.supIcon=this.svg(I.supplements); base.coachNavIcon=this.svg(I.coach); base.chartIcon=this.svg(I.chart);
+    base.setIcon=this.svg(I.settings); base.sosIcon=this.svg(I.sos); base.fabPlayIcon=this.svg(I.play);
+    base.cameraIcon=this.svg(I.camera); base.coachIcon=this.svg(I.coach); base.coreIcon=this.svg(I.core); base.trophyIcon=this.svg(I.trophy);
+
+    const streak = this.computeStreak();
+    if(streak>0){ base.showStreak=true; base.streakText = isAr? `${streak} يوم متتالي 🔥` : `${streak}-day streak 🔥`; }
+
+    const C = 226.19;
+    let weekDone=0, weekTotal=0, dayPct=0;
+    D.DAYS.forEach(d=>{
+      let done=0,total=0;
+      d.groups.forEach(g=>g.items.forEach(it=>{ total++; if(S.checked[it.id]) done++; }));
+      weekDone+=done; weekTotal+=total;
+      if(d.id===S.currentDay && total) dayPct = done/total*100;
+    });
+    const weekPct = weekTotal? weekDone/weekTotal*100:0;
+    base.ringDayOffset = (C-(dayPct/100)*C).toFixed(1);
+    base.ringWeekOffset = (C-(weekPct/100)*C).toFixed(1);
+    base.ringDayPct = Math.round(dayPct)+'%'; base.ringWeekPct = Math.round(weekPct)+'%';
+    base.ringDayComplete = dayPct>=100?'complete':''; base.ringWeekComplete = weekPct>=100?'complete':'';
+    base.statDayLbl = isAr?'اليوم':'Today'; base.statDayVal = Math.round(dayPct)+'%';
+    base.statWeekLbl = isAr?'الأسبوع':'Week'; base.statWeekVal = Math.round(weekPct)+'%';
+    base.statStreakLbl = isAr?'سلسلة':'Streak'; base.statStreakVal = streak+(isAr?' يوم':'d');
+    base.undoShowCls = S.undoToast?'show':'';
+    if(S.undoToast){
+      base.undoText = isAr? `تم ✓ ${S.undoToast.ar}` : `Done ✓ ${S.undoToast.en}`;
+      base.undoBtnText = isAr?'تراجع':'Undo';
+    }
+
+    const q = S.query.trim().toLowerCase();
+    if(q.length>=2){
+      base.searchShowCls='show';
+      let count=0;
+      D.DAYS.forEach(d=>d.groups.forEach(g=>g.items.forEach(it=>{
+        if(count>=8) return;
+        if((it.ar+' '+it.en).toLowerCase().includes(q)){
+          count++;
+          base.searchResults.push({name: isAr?it.ar:it.en, dayName: isAr?d.ar:d.en, go:()=>this.jumpToItem(d.id,it.id)});
+        }
+      })));
+      base.searchEmpty = base.searchResults.length===0;
+    }
+
+    const h = new Date().getHours();
+    const todayDay = D.DAYS[new Date().getDay()%7];
+    const todayPct = this.dayPct(todayDay, S.checked);
+    let remainCount = 0;
+    todayDay.groups.forEach(g=>g.items.forEach(it=>{ if(!S.checked[it.id]) remainCount++; }));
+    base.suggestShow = true;
+    if(todayPct>=100){
+      base.suggestTitle = isAr?'خلصت يومك — برافو 👏':'Day complete — nice work 👏';
+      base.suggestSub = isAr?'إطالة خفيفة اختيارية قبل النوم تحسّن نومك':'Optional light stretching before bed improves sleep';
+    } else if(todayPct>0){
+      base.suggestTitle = isAr?`كمّل يومك — فاضلك ${remainCount} عناصر`:`Finish your day — ${remainCount} items left`;
+      base.suggestSub = isAr?`إنجازك ${Math.round(todayPct)}% · دوس وكمّل بوضع التركيز`:`You're at ${Math.round(todayPct)}% · tap to continue in focus mode`;
+    } else if(h<12){
+      base.suggestTitle = isAr?'صباح الخير — ابدأ بالحركة اليومية':'Good morning — start with mobility';
+      base.suggestSub = isAr?'10-12 دقيقة تجهّز ضهرك لليوم':'10-12 minutes to prep your back for the day';
+    } else if(h<20){
+      base.suggestTitle = isAr?`وقت التمرين — ${todayDay.ar}`:`Workout time — ${todayDay.en}`;
+      base.suggestSub = isAr?'دوس هنا وابدأ وضع التركيز':'Tap to start focus mode';
+    } else {
+      base.suggestTitle = isAr?'قبل النوم — إطالة خفيفة':'Before bed — light stretching';
+      base.suggestSub = isAr?'خمس دقايق إطالة تحسّن نومك':'Five minutes of stretching improves your sleep';
+    }
+    base.suggestGo = ()=>{ this.switchDay(todayDay.id); this.startFocusMode(); };
+
+    const nowD = new Date();
+    if(nowD.getDay()===5 || nowD.getDay()===6){
+      const hist = this.ls('weekPctHistory',[]).slice(-7);
+      if(hist.length){
+        base.weeklyShow=true;
+        base.weeklyTitle = isAr?'ملخص أسبوعك 🏆':'Your Week in Review 🏆';
+        base.weeklyAvg = Math.round(hist.reduce((s,x)=>s+x.pct,0)/hist.length)+'%';
+        base.weeklyAvgLbl = isAr?'متوسط الالتزام':'avg consistency';
+        base.weeklyFull = String(hist.filter(x=>x.pct>=100).length);
+        base.weeklyFullLbl = isAr?'أيام كاملة':'full days';
+        base.weeklyStreak = String(streak);
+        base.weeklyStreakLbl = isAr?'سلسلة متتالية':'day streak';
+      }
+    }
+
+    base.tabs = D.DAYS.map(d=>({
+      ar:d.ar, en:d.en,
+      iconEl: d.icon? React.createElement('span',{className:'tab-ic'},this.svg(I[d.icon])) : null,
+      activeCls: d.id===S.currentDay?'active':'',
+      go:()=>this.switchDay(d.id),
+    }));
+
+    base.days = D.DAYS.filter(d=>d.groups.length).map(d=>{
+      const pct = this.dayPct(d, S.checked);
+      return {
+        id:d.id, ar:d.ar, en:d.en,
+        activeCls: d.id===S.currentDay?'active':'',
+        pct: pct.toFixed(1), pctLabel: Math.round(pct)+'%', barCls: pct>=100?'complete':'',
+        skipBtnText: this.isDaySkipped(d.id)? (isAr?'✓ يوم راحة':'✓ Rest day') : (isAr?'تخطي اليوم':'Skip day'),
+        skipBtnCls: this.isDaySkipped(d.id)?'active':'',
+        toggleSkip:()=>this.toggleSkipDay(d.id),
+        groups: d.groups.map(g=>({
+          ar:g.ar, en:g.en,
+          iconEl: this.svg(D.GROUP_ICON[g.key]||''),
+          countLabel: g.items.filter(x=>S.checked[x.id]).length + '/' + g.items.length,
+          items: g.items.map(it=>{
+            const done = !!S.checked[it.id];
+            const cnt = S.counters[it.id]||0;
+            const setsInfo = it.sets? it.sets+' × ':'';
+            let subAr='', subEn='';
+            if(it.type==='hold'){ subAr=`${setsInfo}ثبات ${it.target} ثانية`; subEn=`${setsInfo}hold ${it.target}s`; }
+            else if(it.type==='reps'){ subAr=`${setsInfo}${it.target} تكرار`; subEn=`${setsInfo}${it.target} reps`; }
+            else if(it.type==='info'){ subAr=it.desc_ar||''; subEn=it.desc_en||''; }
+            const note = it.sets? this.adaptiveNote(it.id) : null;
+            const logs = it.sets? this.ls('wlog_'+it.id,[]) : [];
+            const lastW = logs.length && logs[logs.length-1].weight!=null? String(logs[logs.length-1].weight):'';
+            const pSel = S.painSel[it.id];
+            return {
+              id:it.id, ar:it.ar, en:it.en,
+              doneCls: done?'done':'', chkCls: done?'checked':'',
+              toggle:()=>this.toggleCheck(it.id),
+              openDetail: it.type!=='info'? ()=>this.openDetail(it.id) : undefined,
+              animCls: (it.id.startsWith('n')||it.id.startsWith('sup'))?'food':'',
+              animEl:this.svg(D.getAnim(it)),
+              subEl: React.createElement(React.Fragment,null,
+                React.createElement('span',{key:'a','data-lang':'ar',dangerouslySetInnerHTML:{__html:subAr}}),
+                React.createElement('span',{key:'e','data-lang':'en',dangerouslySetInnerHTML:{__html:subEn}})),
+              hasVid: !!it.q,
+              vidUrl: it.q? 'https://www.youtube.com/results?search_query='+encodeURIComponent(it.q):'',
+              playIcon: this.svg(I.play),
+              isReps: it.type==='reps',
+              cntLabel: cnt+'/'+it.target,
+              inc:()=>this.changeCounter(it.id,1), dec:()=>this.changeCounter(it.id,-1),
+              isHold: it.type==='hold',
+              timeLabel: this.fmtTime(S.timeLeft[it.id]!=null? S.timeLeft[it.id]: it.target),
+              timerCls: S.running[it.id]?'running':'',
+              start:()=>this.startTimer(it.id, it.target), reset:()=>this.resetTimer(it.id, it.target),
+              hasSets: !!it.sets,
+              wVal: S.wInputs[it.id]||'',
+              wPh: lastW || (isAr?'كجم':'kg'),
+              onWeight: e=>{ const v=e.target.value; this.setState(s=>({wInputs:{...s.wInputs,[it.id]:v}})); },
+              p1cls:pSel===1?'active':'', p2cls:pSel===2?'active':'', p3cls:pSel===3?'active':'',
+              pain1:()=>this.setPain(it.id,1), pain2:()=>this.setPain(it.id,2), pain3:()=>this.setPain(it.id,3),
+              log:()=>this.logExercise(it.id),
+              hasNote: !!note, noteCls: note? note.cls:'', noteText: note? note.text:'',
+            };
+          })
+        }))
+      };
+    });
+
+    const TIMES_META = [
+      {key:'mob', ar:'الحركة اليومية', en:'Daily Mobility', icon:I.mob},
+      {key:'breakfast', ar:'الفطار', en:'Breakfast', icon:I.nutrition},
+      {key:'snack1', ar:'سناك 1', en:'Snack 1', icon:I.nutrition},
+      {key:'lunch', ar:'الغدا', en:'Lunch', icon:I.nutrition},
+      {key:'gym', ar:'الجيم / التمرين', en:'Gym / Workout', icon:I.gym},
+      {key:'snack2', ar:'سناك 2', en:'Snack 2', icon:I.nutrition},
+      {key:'dinner', ar:'العشا', en:'Dinner', icon:I.nutrition},
+    ];
+    base.settingRows = TIMES_META.map((r,i)=>({
+      ar:r.ar, en:r.en, iconEl:this.svg(r.icon),
+      val:S.times[r.key]||'',
+      rowStyle: i===TIMES_META.length-1? 'border-bottom:none':'',
+      onChange: e=>{ const v=e.target.value; this.setState(s=>({times:{...s.times,[r.key]:v}})); },
+    }));
+
+    base.progressActiveCls = S.currentDay==='progress'?'active':'';
+    base.coachActiveCls = S.currentDay==='coach'?'active':'';
+    const lvl = this.getLevelInfo();
+    base.levelTitle = isAr?`المستوى ${lvl.level}`:`Level ${lvl.level}`;
+    base.levelBarW = (lvl.inLevel/lvl.perLevel*100).toFixed(1);
+    base.levelSub = `${lvl.inLevel}/${lvl.perLevel} XP · ${isAr?'إجمالي':'total'} ${lvl.xp} XP`;
+    const hist14 = this.ls('weekPctHistory',[]).slice(-14);
+    const todayStr = new Date().toDateString();
+    base.chartTitle = isAr?'الالتزام آخر 14 يوم':'Last 14 Days Consistency';
+    base.chartBars = hist14.map(x=>({h:Math.max(x.pct,3), cls:x.date===todayStr?'today':'', lbl:String(new Date(x.date).getDate())}));
+    base.chartEmpty = !hist14.length;
+    base.noDataText = isAr?'لسه مفيش بيانات كفاية':'Not enough data yet';
+    base.streakCardTitle = isAr?`السلسلة المتتالية: ${streak} يوم`:`Current Streak: ${streak} days`;
+    base.streakCardSub = isAr?'خلّص كل حاجة في يومك عشان تحافظ على السلسلة':'Complete everything in your day to keep the streak going';
+    base.weightsTitle = isAr?'آخر الأوزان المسجلة':'Latest Logged Weights';
+    D.DAYS.forEach(d=>d.groups.forEach(g=>g.items.forEach(it=>{
+      if(!it.sets) return;
+      const logs = this.ls('wlog_'+it.id,[]);
+      if(!logs.length) return;
+      const last = logs[logs.length-1];
+      base.weightRows.push({name: isAr?it.ar:it.en, wt: last.weight!=null? last.weight+'kg':'—', count: logs.length+' '+(isAr?'تسجيل':'logs')});
+    })));
+    base.weightsEmpty = !base.weightRows.length;
+    base.weightsEmptyText = isAr?'لسه ما سجلتش أوزان — سجّل وزن أي تمرين جيم عشان يظهر هنا':'No weights logged yet — log a gym exercise weight to see it here';
+    base.photosTitle = isAr?'صور التقارير والمتابعة':'Report & Progress Photos';
+    base.photosSub = isAr?'ارفع صور تقارير الأشعة أو صور متابعة (قبل/بعد) — بتتحفظ على جهازك بس':'Upload MRI/report photos or before-after progress shots — stored on your device only';
+    base.photoThumbs = S.photos.slice(-8).reverse().map(p=>{
+      const d = new Date(p.date);
+      return {imgEl: React.createElement('img',{src:p.data, alt:''}), lbl:d.getDate()+'/'+(d.getMonth()+1)+(p.weight!=null? ' · '+p.weight+'kg':'')};
+    });
+    base.photosEmpty = !base.photoThumbs.length;
+    base.photosEmptyText = isAr?'لسه مفيش صور — ضيف أول صورة تقرير أو متابعة':'No photos yet — add your first report or progress photo';
+    const pa = this.photoProgressAnalysis();
+    if(pa){
+      base.photoAnalysisShow = true;
+      const dir = pa.diff<0? (isAr?'نزل':'down') : pa.diff>0? (isAr?'زاد':'up') : (isAr?'ثابت':'stable');
+      base.photoAnalysisText = isAr
+        ? `من ${pa.count} صور بالوزن: وزنك ${dir} ${Math.abs(pa.diff)} كجم (من ${pa.first.weight} إلى ${pa.last.weight} كجم) على مدار الفترة دي.`
+        : `From ${pa.count} weighted photos: your weight is ${dir} ${Math.abs(pa.diff)}kg (${pa.first.weight} → ${pa.last.weight}kg) over this period.`;
+    }
+    if(S.pendingPhoto){
+      base.pendingShow = true;
+      base.pendingImgEl = React.createElement('img',{src:S.pendingPhoto, alt:'', className:'pending-photo-preview'});
+      base.tagWeightVal = S.photoTagWeight||'';
+      base.tagWeightPh = isAr?'الوزن (كجم) اختياري':'Weight (kg) optional';
+      base.onTagWeight = e=>this.setState({photoTagWeight:e.target.value});
+      base.tagTypeProgress = S.photoTagType==='progress'?'active':'';
+      base.tagTypeReport = S.photoTagType==='report'?'active':'';
+      base.setTagProgress = ()=>this.setState({photoTagType:'progress'});
+      base.setTagReport = ()=>this.setState({photoTagType:'report'});
+    }
+    base.voiceTitle = isAr?'وضع الصوت':'Voice Mode';
+    base.voiceSub = isAr?'يقرا اسم التمرين وعدد التكرار بصوت عالي وانت بتتحرك، من غير ما تبص في الموبايل':'Reads the exercise name and reps out loud while you move, without looking at your phone';
+    base.voiceBtnText = S.voiceOn? (isAr?'🔊 مفعّل — دوس تقفل':'🔊 On — tap to turn off') : (isAr?'🔇 مقفول — دوس تشغّل':'🔇 Off — tap to turn on');
+    base.reportTitle = isAr?'تقرير شهري للطباعة':'Printable Monthly Report';
+    base.reportSub = isAr?'يجهزلك صفحة ملخص (الالتزام، الأوزان، السلسلة) تقدر تطبعها أو تحفظها PDF من نافذة الطباعة عشان توريها لدكتورك':'Prepares a summary page (consistency, weights, streak) you can print or save as PDF from the print dialog to show your doctor';
+    base.reportBtnText = isAr?'📄 جهّز التقرير':'📄 Generate Report';
+    base.backupTitle = isAr?'نسخة احتياطية':'Backup';
+    base.backupSub = isAr?'صدّر كل بياناتك (تشيك، أوزان، إعدادات) كملف تقدر ترفعه تاني لو غيّرت الجهاز':'Export all your data (checklist, weights, settings) as a file you can restore later or on a new device';
+    base.exportText = isAr?'⬇ تصدير':'⬇ Export';
+    base.importText = isAr?'⬆ استيراد':'⬆ Import';
+
+    base.coachTitle = isAr?'مدربك الافتراضي':'Your Virtual Coach';
+    base.coachSub = isAr?'تحليل مبني على بياناتك آخر 14 يوم':'Analysis based on your last 14 days of data';
+    if(S.currentDay==='coach'){
+      base.coachCards = this.coachBuildPlan(this.coachAnalyze()).map(c=>({title:c.title, msg:c.msg, cls:c.tone==='warn'?'coach-warn':'coach-ok'}));
+    }
+    base.coachDisclaimer = isAr?'المدرب ده بيحلل بياناتك بقواعد رياضية معروفة، ومش بديل عن دكتورك أو أخصائي العلاج الطبيعي — أي قرار كبير (زيادة وزن كبيرة، تمرين جديد، ألم مستمر) راجعه معاهم.':'This coach analyzes your data using established training rules — it is not a substitute for your doctor or physical therapist. Any big decision (major load increase, new exercise, persistent pain) should go through them.';
+
+    const f = S.focus;
+    base.focusOpenCls = f.open?'open':'';
+    if(f.open){
+      const dayObj = D.DAYS.find(d=>d.id===f.dayId);
+      base.focusDayTag = dayObj? (isAr? dayObj.ar : dayObj.en) : '';
+      if(f.idx >= f.list.length){
+        base.focusDone = true;
+        base.focusDoneText = isAr?'خلصت التمرين! 🎉':'Workout complete! 🎉';
+        base.focusOkText = isAr?'تمام':'Done';
+        base.focusShowNextDay = this.hasNextDay();
+        base.focusNextDayText = isAr?'كمّل بيوم تاني ▶':'Continue to next day ▶';
+      } else {
+        const it = f.list[f.idx];
+        base.focusCount = (f.idx+1)+' / '+f.list.length;
+        base.focusName = isAr? it.ar : it.en;
+        base.focusPhaseTag = f.phase==='rest' ? (isAr?'⏸ راحة':'⏸ Resting') : (f.holdRunning||S.counters[it.id]>0 ? (isAr?'🏃 بتتمرن':'🏃 Exercising') : (isAr?'⏳ جاهز':'⏳ Ready'));
+        const setsInfo = it.sets? it.sets+' × ':'';
+        base.focusTarget = it.type==='hold'
+          ? (isAr?`${setsInfo}ثبات ${it.target} ثانية`:`${setsInfo}hold ${it.target}s`)
+          : (isAr?`${setsInfo}${it.target} تكرار`:`${setsInfo}${it.target} reps`);
+        if(f.phase==='rest'){
+          base.focusRest = true;
+          base.restLabel = isAr?'راحة':'Rest';
+          base.restRemaining = f.remaining;
+          base.upNextText = isAr?'التمرين الجاي:':'Up next:';
+          base.skipRestText = isAr?'تخطّي الراحة':'Skip Rest';
+        } else {
+          base.focusExercise = true;
+          base.focusAnim = this.svg(D.getAnim(it));
+          base.focusIsHold = it.type==='hold';
+          base.focusTimeLabel = this.fmtTime(f.remaining);
+          base.focusShowStart = it.type==='hold' && !f.holdRunning;
+          base.startText = isAr?'ابدأ':'Start';
+          base.focusDoneBtnText = isAr?'خلصته ✓':'Done ✓';
+          base.focusHasVid = !!it.q;
+          base.focusVidUrl = it.q? 'https://www.youtube.com/results?search_query='+encodeURIComponent(it.q):'';
+        }
+      }
+    }
+
+    if(S.celebrate){
+      base.celebrateTitle = isAr?'برافو! 🎉':'Great job! 🎉';
+      base.celebrateMsg = isAr?`خلّصت كل حاجة في ${S.celebrate.ar} النهاردة`:`You completed everything in ${S.celebrate.en} today`;
+      base.celebrateBtn = isAr?'تمام':'Nice';
+    }
+
+    if(S.detailItemId){
+      const it = this.findItem(S.detailItemId);
+      const day = this.dayOf(S.detailItemId);
+      const grp = day && day.groups.find(g=>g.items.some(x=>x.id===S.detailItemId));
+      if(it){
+        base.detailShow = true;
+        base.detailTitle = isAr? it.ar : it.en;
+        const setsInfo = it.sets? it.sets+' × ':'';
+        base.detailSub = it.type==='hold'
+          ? (isAr?`${setsInfo}ثبات ${it.target} ثانية`:`${setsInfo}hold ${it.target}s`)
+          : (isAr?`${setsInfo}${it.target} تكرار`:`${setsInfo}${it.target} reps`);
+        const tip = this.tipsFor(grp? grp.key : 'mob');
+        base.detailTip = isAr? tip.ar : tip.en;
+      }
+    }
+    return base;
+  }
+}
+</script>
+</body>
+</html>
