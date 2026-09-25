@@ -264,7 +264,10 @@ export default class App extends React.Component {
       return;
     }
     const num = v => (v === '' || v == null || isNaN(Number(v)) ? null : Math.round(Number(v) * 10) / 10);
-    const imported = { steps: num(data.steps), weight: num(data.weight_kg), sleep: num(data.sleep_hours), waterMl: num(data.water_ml) };
+    // Summed sleep durations can arrive in hours, minutes or seconds depending on iOS — normalize to hours.
+    let sleep = num(data.sleep_hours);
+    if (sleep != null && sleep > 24) sleep = Math.round(sleep / (sleep > 1440 ? 3600 : 60) * 10) / 10;
+    const imported = { steps: num(data.steps), weight: num(data.weight_kg), sleep, waterMl: num(data.water_ml) };
     if (imported.waterMl != null) {
       const cups = Math.round(imported.waterMl / 240);
       lsSet('water_' + todayKey(), cups);
