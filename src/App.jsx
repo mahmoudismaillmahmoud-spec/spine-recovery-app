@@ -234,17 +234,30 @@ export default class App extends React.Component {
   };
   // Pulls today's data that the "Get Spine Health" Shortcut copied to the clipboard.
   // (Clipboard, not a URL: iOS opens links in Safari, whose storage is separate from the installed app.)
+  // Tolerant of how Shortcuts formats numbers on an Arabic-language iPhone:
+  // Arabic-Indic digits (٨٢٫٤), thousands separators (6,543), and units/text after the number.
   parseHealthClipboard(text) {
-    try {
-      const d = JSON.parse(String(text || '').trim());
-      if (!d || d.source !== 'spine-health') return null;
-      return d;
-    } catch (e) { return null; }
+    const s = String(text || '')
+      .replace(/[٠-٩]/g, c => String(c.charCodeAt(0) - 0x0660))
+      .replace(/[۰-۹]/g, c => String(c.charCodeAt(0) - 0x06F0))
+      .replace(/٫/g, '.').replace(/٬/g, ',');
+    if (!s.includes('spine-health')) return null;
+    const read = key => {
+      const m = s.match(new RegExp('"?' + key + '"?\\s*:\\s*"?([^"}]*)'));
+      if (!m) return null;
+      let v = m[1].trim().replace(/,\s*$/, '');
+      v = v.replace(/,(?=\d{3}(\D|$))/g, '').replace(',', '.');
+      const n = parseFloat(v);
+      return isNaN(n) ? null : n;
+    };
+    const date = (s.match(/"date"\s*:\s*"([^"]*)"/) || [])[1] || null;
+    return { source: 'spine-health', date, steps: read('steps'), weight_kg: read('weight_kg'), sleep_hours: read('sleep_hours'), water_ml: read('water_ml') };
   }
   importFromHealth = async () => {
     let data = null;
     try { data = this.parseHealthClipboard(await navigator.clipboard.readText()); } catch (e) {}
-    const fresh = data && (!data.date || new Date(data.date).toDateString() === todayKey());
+    const dt = data && data.date ? new Date(data.date) : null;
+    const fresh = data && (!dt || isNaN(dt) || dt.toDateString() === todayKey());
     if (!fresh) {
       this.setState({ healthMsg: this.t('بشغّل الشورت كت… لما يخلص ارجع للتطبيق ودوس الزرار تاني', 'Running the Shortcut… when it finishes, come back and tap this button again') });
       window.location.href = `shortcuts://run-shortcut?name=${encodeURIComponent('Get Spine Health')}`;
