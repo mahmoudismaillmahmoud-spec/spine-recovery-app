@@ -1,25 +1,40 @@
-# CODING AGENTS: READ THIS FIRST
+# Spine Recovery App — تطبيق تأهيل العمود الفقري
 
-This is a **handoff bundle** from Claude Design (claude.ai/design).
+Bilingual (Arabic RTL default + English) spine-rehab and fitness tracker, built as an installable
+PWA from the Claude Design handoff in [`project/`](project/) (`Spine Recovery App.dc.html`).
 
-A user mocked up designs in HTML/CSS/JS using an AI design tool, then exported this bundle so a coding agent can implement the designs for real.
+## Run
 
-## What you should do — IMPORTANT
+```bash
+npm install
+npm run dev      # local dev server
+npm run build    # production build in dist/
+npm run preview  # serve the production build
+```
 
-**Read the chat transcripts first.** There are 1 chat transcript(s) in `chats/`. The transcripts show the full back-and-forth between the user and the design assistant — they tell you **what the user actually wants** and **where they landed** after iterating. Don't skip them. The final HTML files are the output, but the chat is where the intent lives.
+## Deploy (free) and install on iPhone
 
-**Read `project/Spine Recovery App.dc.html` in full.** The user had this file open when they triggered the handoff, so it's almost certainly the primary design they want built. Read it top to bottom — don't skim. Then **follow its imports**: open every file it pulls in (shared components, CSS, scripts) so you understand how the pieces fit together before you start implementing.
+1. Push to `main` on GitHub, then in the repo go to **Settings → Pages → Source: GitHub Actions**.
+   `.github/workflows/deploy.yml` builds and publishes on every push, so the installed app always gets the latest version.
+2. Open the Pages URL in **Safari** on the iPhone → Share → **Add to Home Screen**.
+   It opens full-screen like a native app and keeps working offline (service worker in `public/sw.js`).
 
-**If anything is ambiguous, ask the user to confirm before you start implementing.** It's much cheaper to clarify scope up front than to build the wrong thing.
+## Structure
 
-## About the design files
+| Path | What |
+| --- | --- |
+| `src/data/spine-data.js` | All exercises, meals, supplements, icons and exercise animations (verbatim from the design) |
+| `src/styles/theme.css` | Design stylesheet (verbatim); `app.css` holds small fixes on top |
+| `src/config.js` | The design's "Tweaks": app name, brand colors, default language, rest seconds, XP per level, water goal |
+| `src/App.jsx` | App state and behavior (checklist, counters, timers, focus mode, reminders, backup, photos…) |
+| `src/components/` | UI sections: dashboard, day panels, progress, coach, sheets, focus overlay, bottom nav |
+| `src/lib/` | Storage, sounds/haptics, progress/streak math, coach rules, printable report |
 
-The design medium is **HTML/CSS/JS** — these are prototypes, not production code. Your job is to **recreate them pixel-perfectly** in whatever technology makes sense for the target codebase (React, Vue, native, whatever fits). Match the visual output; don't copy the prototype's internal structure unless it happens to fit.
+All data stays on the device in `localStorage`, using the **same keys as the prototype**, so existing data
+and backup files from the design version import unchanged.
 
-**Don't render these files in a browser or take screenshots unless the user asks you to.** Everything you need — dimensions, colors, layout rules — is spelled out in the source. Read the HTML and CSS directly; a screenshot won't tell you anything they don't.
+## Platform limits (iOS)
 
-## Bundle contents
-
-- `README.md` — this file
-- `chats/` — conversation transcripts (read these!)
-- `project/` — the `تطبيق تأهيل العمود الفقري` project files (HTML prototypes, assets, components)
+- Reminders fire only while the app is open — iOS doesn't allow scheduled local notifications from web apps.
+- "Send to Apple Health" opens a Shortcut named `Log Spine Recovery` that you create once in the Shortcuts app;
+  web apps can't write to HealthKit directly.

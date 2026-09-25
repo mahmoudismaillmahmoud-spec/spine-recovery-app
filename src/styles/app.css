@@ -1,0 +1,6 @@
+/* Fixes on top of the design's theme.css. */
+
+/* Let the 7 nav buttons share the width: long English labels ("Supplements") otherwise
+   push the Settings button off-screen on phones. */
+.navbtn{min-width:0;padding-inline:2px;}
+.navbtn > span[data-lang]{max-width:100%;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
