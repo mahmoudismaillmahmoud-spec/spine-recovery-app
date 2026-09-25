@@ -33,6 +33,22 @@ npm run preview  # serve the production build
 All data stays on the device in `localStorage`, using the **same keys as the prototype**, so existing data
 and backup files from the design version import unchanged.
 
+## Claude coach
+
+The Coach tab has a chat with Claude (`claude-opus-5`, server-side refusal fallback enabled), grounded in a snapshot of the
+user's tracked data (`src/lib/claude.js`). The user pastes their own Anthropic API key in Settings; it is stored only in
+that device's `localStorage` (`claudeApiKey`), excluded from backup export/import, and sent only to `api.anthropic.com`.
+Usage is billed to the user's Anthropic account. The SDK is lazy-loaded so it doesn't slow app start-up.
+
+## Apple Health
+
+- **Send**: a Shortcut named `Log Spine Recovery` receives today's water/sleep/weight.
+- **Import**: a Shortcut named `Get Spine Health` copies one line of JSON to the clipboard:
+  `{"source":"spine-health","steps":N,"weight_kg":N,"sleep_hours":N,"water_ml":N}` (any value may be empty;
+  Arabic digits, thousands separators and sleep in minutes/seconds are handled).
+- **Automatic**: with "Auto-import" on in Settings and a daily Shortcuts automation running `Get Spine Health`,
+  the first touch in the app each day imports the data (iOS requires a user gesture and shows a Paste prompt).
+
 ## Platform limits (iOS)
 
 - Reminders fire only while the app is open — iOS doesn't allow scheduled local notifications from web apps.

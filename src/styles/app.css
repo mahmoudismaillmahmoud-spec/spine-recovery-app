@@ -12,3 +12,55 @@
 .health-stats{display:flex;flex-wrap:wrap;gap:6px;margin-top:10px;}
 .health-stats span{background:var(--green-light);color:var(--green-dark);border-radius:12px;padding:4px 10px;font-size:.78em;font-weight:700;}
 html.dark .health-stats span{background:var(--card2);color:var(--txt);}
+
+/* ---------- Smoothness ---------- */
+button, .tab, .chk, .navbtn, .card-title, .suggest-card{touch-action:manipulation;}
+html{scroll-behavior:smooth;}
+body{overscroll-behavior-y:none;}
+/* Shorter hero so today's content is reachable sooner. */
+.cover{padding:26px 20px 30px;margin-bottom:18px;}
+.cover h2{font-size:1.4em;margin-bottom:6px;}
+.cover p{font-size:.88em;margin:0;}
+/* Floating buttons hide while scrolling down, return on scroll up. */
+.focus-fab, .sos-btn{transition:transform .28s cubic-bezier(.22,.61,.36,1), opacity .2s ease;}
+html.scrolling-down .focus-fab, html.scrolling-down .sos-btn{transform:translateY(160%);opacity:0;pointer-events:none;}
+.page{padding-bottom:170px;}
+/* Doctor warning collapses to a chip after it's acknowledged. */
+.warn-ack{display:block;margin-top:10px;margin-inline-start:auto;background:var(--red);color:#fff;border:none;border-radius:12px;padding:6px 16px;font-weight:800;font-family:inherit;cursor:pointer;}
+.warn-chip{display:block;width:100%;text-align:start;background:#fdf2f1;color:#b03a2e;border:1px solid rgba(231,76,60,.25);border-radius:12px;padding:8px 14px;margin:14px 0;font-weight:700;font-size:.82em;font-family:inherit;cursor:pointer;}
+html.dark .warn-chip{background:rgba(231,76,60,.14);color:#ff8f84;}
+.health-help summary{cursor:pointer;font-size:.78em;color:var(--txt-dim);margin-top:8px;}
+@media (prefers-reduced-motion: reduce){ *{animation-duration:.01ms !important;transition-duration:.01ms !important;} html{scroll-behavior:auto;} }
+
+/* ---------- Claude coach ---------- */
+.claude-chat{display:flex;flex-direction:column;gap:10px;}
+.claude-head{display:flex;justify-content:space-between;align-items:center;}
+.claude-head h4{margin:0;}
+.claude-clear, .link-btn{background:none;border:none;color:var(--green);font-weight:700;font-family:inherit;cursor:pointer;font-size:.8em;}
+.claude-msgs{display:flex;flex-direction:column;gap:8px;max-height:55vh;overflow-y:auto;}
+.claude-msg{padding:10px 14px;border-radius:16px;white-space:pre-wrap;line-height:1.65;font-size:.9em;max-width:92%;}
+.claude-msg.user{align-self:flex-end;background:var(--green);color:#fff;border-end-end-radius:4px;}
+.claude-msg.assistant{align-self:flex-start;background:var(--card2);border:1px solid var(--border);border-end-start-radius:4px;}
+html[dir="rtl"] .claude-msg.user{align-self:flex-start;}
+html[dir="rtl"] .claude-msg.assistant{align-self:flex-end;}
+.claude-suggest{display:flex;flex-wrap:wrap;gap:6px;}
+.claude-suggest button{background:var(--green-light);color:var(--green-dark);border:none;border-radius:14px;padding:8px 12px;font-family:inherit;font-weight:700;font-size:.8em;cursor:pointer;text-align:start;}
+html.dark .claude-suggest button{background:var(--card2);color:var(--txt);}
+.claude-input{display:flex;gap:8px;}
+.claude-input input{flex:1;min-width:0;border:1px solid var(--border);background:var(--card2);color:var(--txt);border-radius:14px;padding:10px 12px;font-family:inherit;font-size:16px;}
+.claude-input button, .key-row button{background:var(--green);color:#fff;border:none;border-radius:14px;padding:0 16px;font-weight:800;font-family:inherit;cursor:pointer;}
+.claude-input button:disabled, .key-row button:disabled{opacity:.5;}
+.claude-error{background:#fdf2f1;color:#b03a2e;border-radius:12px;padding:8px 12px;font-size:.82em;}
+html.dark .claude-error{background:rgba(231,76,60,.14);color:#ff8f84;}
+.claude-typing{display:inline-flex;gap:4px;}
+.claude-typing i{width:6px;height:6px;border-radius:50%;background:var(--txt-dim);animation:blink 1s infinite;}
+.claude-typing i:nth-child(2){animation-delay:.2s;} .claude-typing i:nth-child(3){animation-delay:.4s;}
+.claude-setup p{color:var(--txt-dim);font-size:.85em;}
+
+/* ---------- Settings sections ---------- */
+.settings-section{border-bottom:1px solid var(--border);padding-bottom:14px;margin-bottom:14px;}
+.key-row{display:flex;gap:8px;}
+.key-row input{flex:1;min-width:0;border:1px solid var(--border);background:var(--card2);color:var(--txt);border-radius:12px;padding:10px 12px;font-size:16px;direction:ltr;}
+.toggle-row{display:flex;align-items:center;gap:10px;font-weight:700;font-size:.9em;cursor:pointer;}
+.toggle-row input{width:20px;height:20px;accent-color:var(--green);}
+.sheet-close{position:absolute;top:14px;inset-inline-end:14px;width:34px;height:34px;border-radius:50%;border:none;background:var(--card2);color:var(--txt);font-size:.95em;cursor:pointer;}

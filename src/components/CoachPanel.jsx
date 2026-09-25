@@ -1,6 +1,7 @@
 import { ICONS as I } from '../data/spine-data.js';
 import { coachCards } from '../lib/coach.js';
 import Svg from './Svg.jsx';
+import ClaudeChat from './ClaudeChat.jsx';
 
 export default function CoachPanel({ app }) {
   const isAr = app.isAr();
@@ -15,6 +16,7 @@ export default function CoachPanel({ app }) {
           <p style={{ margin: '2px 0 0', fontSize: '.78em', color: 'var(--txt-dim)' }}>{isAr ? 'تحليل مبني على بياناتك آخر 14 يوم' : 'Analysis based on your last 14 days of data'}</p>
         </div>
       </div>
+      {active && <ClaudeChat app={app} />}
       {cards.map((c, i) => (
         <div key={i} className={'chart-card coach-card ' + (c.tone === 'warn' ? 'coach-warn' : 'coach-ok')}><h4>{c.title}</h4><p>{c.msg}</p></div>
       ))}

@@ -1,7 +1,47 @@
 import { ICONS as I } from '../data/spine-data.js';
 import { findItem, dayOf } from '../lib/progress.js';
 import { tipsFor, targetText } from '../lib/tips.js';
+import { useState } from 'react';
 import Svg from './Svg.jsx';
+import { getApiKey, setApiKey } from '../lib/claude-store.js';
+
+function ClaudeSettings({ app }) {
+  const isAr = app.isAr();
+  const [key, setKey] = useState(getApiKey());
+  const [saved, setSaved] = useState(!!getApiKey());
+  const save = () => { setApiKey(key); setSaved(!!key.trim()); app.showSaved(); };
+  const remove = () => { setApiKey(''); setKey(''); setSaved(false); };
+  return (
+    <div className="settings-section">
+      <h3>{isAr ? '✨ كلود (الذكاء الاصطناعي)' : '✨ Claude AI'}</h3>
+      <p className="card-sub">{isAr
+        ? 'حط مفتاح API من console.anthropic.com. المفتاح بيتحفظ على موبايلك بس، ومش بيدخل في النسخة الاحتياطية. الاستخدام بيتحاسب على حسابك في Anthropic.'
+        : 'Paste an API key from console.anthropic.com. It stays on this phone only and is excluded from backups. Usage is billed to your Anthropic account.'}</p>
+      <div className="key-row">
+        <input type="password" autoComplete="off" value={key} onChange={e => { setKey(e.target.value); setSaved(false); }} placeholder="sk-ant-..." />
+        <button onClick={save} disabled={!key.trim()}>{isAr ? 'حفظ' : 'Save'}</button>
+      </div>
+      {saved && <div className="notif-status ok">{isAr ? '✓ كلود متوصل — افتح تاب المدرب واسأله' : '✓ Connected — open the Coach tab to chat'} <button className="link-btn" onClick={remove}>{isAr ? 'امسح المفتاح' : 'Remove key'}</button></div>}
+    </div>
+  );
+}
+
+function HealthSettings({ app }) {
+  const isAr = app.isAr();
+  const on = app.state.healthAuto;
+  return (
+    <div className="settings-section">
+      <h3>{isAr ? '🍏 Apple Health تلقائي' : '🍏 Automatic Apple Health'}</h3>
+      <p className="card-sub">{isAr
+        ? 'لما يكون شغال، أول لمسة ليك في التطبيق كل يوم بتسحب بيانات الصحة من غير ما تدوّر على زرار. محتاج أتمتة في Shortcuts بتشغّل "Get Spine Health" كل يوم (الخطوات في الشرح).'
+        : 'When on, your first touch in the app each day pulls Health data automatically. Requires a Shortcuts automation that runs "Get Spine Health" daily.'}</p>
+      <label className="toggle-row">
+        <input type="checkbox" checked={!!on} onChange={e => app.setHealthAuto(e.target.checked)} />
+        <span>{isAr ? 'سحب تلقائي من Apple Health' : 'Auto-import from Apple Health'}</span>
+      </label>
+    </div>
+  );
+}
 
 const REMINDERS = [
   { key: 'mob', ar: 'الحركة اليومية', en: 'Daily Mobility', icon: I.mob },
@@ -21,6 +61,9 @@ export function SettingsSheet({ app }) {
       <div className={'sheet-overlay ' + cls} onClick={() => app.setState({ sheetOpen: false })} />
       <div className={'sheet ' + cls}>
         <div className="sheet-handle" />
+        <button className="sheet-close" aria-label="close" onClick={() => app.setState({ sheetOpen: false })}>✕</button>
+        <ClaudeSettings app={app} />
+        <HealthSettings app={app} />
         <h3><span data-lang="ar">الإشعارات اليومية</span><span data-lang="en">Daily Reminders</span></h3>
         <p className="card-sub"><span data-lang="ar">حدد وقت كل تذكير — هيبعتلك إشعار طول ما الصفحة مفتوحة على جهازك (بعد ما تضيفها للشاشة الرئيسية).</span><span data-lang="en">Set a time for each reminder — you'll get a notification while this page is open on your device (after adding it to your home screen).</span></p>
         {REMINDERS.map((r, i) => (

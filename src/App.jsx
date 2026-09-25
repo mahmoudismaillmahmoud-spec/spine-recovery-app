@@ -5,6 +5,7 @@ import { ls, lsSet, todayKey } from './lib/storage.js';
 import { playTick, playClick, playBeep, vibrate } from './lib/sound.js';
 import { findItem, dayOf, dayPct, recordDayCompletion, recordDailySnapshot } from './lib/progress.js';
 import { openMonthlyReport } from './lib/report.js';
+import { KEY_STORAGE } from './lib/claude-store.js';
 import { Header, Dashboard } from './components/Dashboard.jsx';
 import Tabs from './components/Tabs.jsx';
 import DayPanel from './components/DayPanel.jsx';
@@ -50,7 +51,7 @@ export default class App extends React.Component {
       celebrate: null, saveShow: false, voiceOn: ls('voiceModeOn', false), photos: ls('reportPhotos', []),
       detailItemId: null, pwaBannerShow: !standalone && !ls('pwaBannerDismissed', false),
       waterCount: ls('water_' + todayKey(), 0), sleepHours: ls('sleep_' + todayKey(), ''),
-      healthImport: ls('healthImport_' + todayKey(), null), healthMsg: null,
+      healthImport: ls('healthImport_' + todayKey(), null), healthMsg: null, healthAuto: ls('healthAuto', false),
       undoToast: null, pendingPhoto: null, photoTagWeight: '', photoTagType: 'progress',
     };
     this.intervals = {};
@@ -69,12 +70,29 @@ export default class App extends React.Component {
       if (e.target.closest('button, .chk, .tab, .navbtn, .card-title, .skip-day-btn, .suggest-card, .search-result-row')) playClick();
     };
     document.addEventListener('click', this._onClickSound, true);
+    // Floating buttons slide away while scrolling down so they never cover content.
+    let lastY = window.scrollY;
+    this._onScroll = () => {
+      const y = window.scrollY, root = document.documentElement.classList;
+      if (Math.abs(y - lastY) > 6) root.toggle('scrolling-down', y > lastY && y > 120);
+      lastY = y;
+      clearTimeout(this._scrollStopT);
+      this._scrollStopT = setTimeout(() => root.remove('scrolling-down'), 700);
+    };
+    window.addEventListener('scroll', this._onScroll, { passive: true });
+    this._onFirstTouch = () => this.autoImportHealth();
+    document.addEventListener('pointerup', this._onFirstTouch, true);
+    this._onVisible = () => { if (document.visibilityState === 'visible') this._healthTried = false; };
+    document.addEventListener('visibilitychange', this._onVisible);
   }
   componentWillUnmount() {
     Object.values(this.intervals).forEach(i => clearInterval(i));
     if (this.focusInterval) clearInterval(this.focusInterval);
     if (this._notifInterval) clearInterval(this._notifInterval);
     document.removeEventListener('click', this._onClickSound, true);
+    document.removeEventListener('pointerup', this._onFirstTouch, true);
+    document.removeEventListener('visibilitychange', this._onVisible);
+    window.removeEventListener('scroll', this._onScroll);
   }
 
   // ---------- helpers ----------
@@ -253,16 +271,31 @@ export default class App extends React.Component {
     const date = (s.match(/"date"\s*:\s*"([^"]*)"/) || [])[1] || null;
     return { source: 'spine-health', date, steps: read('steps'), weight_kg: read('weight_kg'), sleep_hours: read('sleep_hours'), water_ml: read('water_ml') };
   }
-  importFromHealth = async () => {
+  async readHealthClipboard() {
     let data = null;
     try { data = this.parseHealthClipboard(await navigator.clipboard.readText()); } catch (e) {}
     const dt = data && data.date ? new Date(data.date) : null;
-    const fresh = data && (!dt || isNaN(dt) || dt.toDateString() === todayKey());
-    if (!fresh) {
+    return data && (!dt || isNaN(dt) || dt.toDateString() === todayKey()) ? data : null;
+  }
+  // Auto mode: a daily Shortcuts automation copies Health data; the first touch after opening
+  // the app (a user gesture iOS requires for clipboard access) imports it. Never launches Shortcuts.
+  setHealthAuto = on => { this.save('healthAuto', on); this.setState({ healthAuto: on }); };
+  autoImportHealth = async () => {
+    if (!this.state.healthAuto || this._healthTried || ls('healthImport_' + todayKey(), null)) return;
+    this._healthTried = true;
+    const data = await this.readHealthClipboard();
+    if (data) this.applyHealth(data);
+  };
+  importFromHealth = async () => {
+    const data = await this.readHealthClipboard();
+    if (!data) {
       this.setState({ healthMsg: this.t('بشغّل الشورت كت… لما يخلص ارجع للتطبيق ودوس الزرار تاني', 'Running the Shortcut… when it finishes, come back and tap this button again') });
       window.location.href = `shortcuts://run-shortcut?name=${encodeURIComponent('Get Spine Health')}`;
       return;
     }
+    this.applyHealth(data);
+  };
+  async applyHealth(data) {
     const num = v => (v === '' || v == null || isNaN(Number(v)) ? null : Math.round(Number(v) * 10) / 10);
     // Summed sleep durations can arrive in hours, minutes or seconds depending on iOS — normalize to hours.
     let sleep = num(data.sleep_hours);
@@ -284,7 +317,7 @@ export default class App extends React.Component {
     try { await navigator.clipboard.writeText(''); } catch (e) {}
     this.showSaved();
     this.setState({ healthMsg: null, healthImport: imported });
-  };
+  }
   dismissPwaBanner = () => { this.save('pwaBannerDismissed', true); this.setState({ pwaBannerShow: false }); };
   isDaySkipped(dayId) { return ls('skipped_' + dayId + '_' + todayKey(), false); }
   toggleSkipDay = dayId => {
@@ -438,7 +471,7 @@ export default class App extends React.Component {
   // ---------- backup / photos / report ----------
   exportBackup = () => {
     const data = {};
-    for (let i = 0; i < localStorage.length; i++) { const k = localStorage.key(i); data[k] = localStorage.getItem(k); }
+    for (let i = 0; i < localStorage.length; i++) { const k = localStorage.key(i); if (k !== KEY_STORAGE) data[k] = localStorage.getItem(k); }
     const url = URL.createObjectURL(new Blob([JSON.stringify(data)], { type: 'application/json' }));
     const a = document.createElement('a');
     a.href = url; a.download = 'spine-recovery-backup-' + new Date().toISOString().slice(0, 10) + '.json';
@@ -452,7 +485,7 @@ export default class App extends React.Component {
     reader.onload = () => {
       try {
         const data = JSON.parse(reader.result);
-        Object.keys(data).forEach(k => localStorage.setItem(k, data[k]));
+        Object.keys(data).forEach(k => { if (k !== KEY_STORAGE) localStorage.setItem(k, data[k]); });
         location.reload();
       } catch (err) { alert(this.t('ملف النسخة الاحتياطية غير صالح', 'Invalid backup file')); }
     };
@@ -544,6 +577,8 @@ export default class App extends React.Component {
   render() {
     const S = this.state;
     const isAr = this.isAr();
+    // Nutrition, supplements, progress and coach open straight to their content (no daily dashboard above).
+    const isDayTab = /^d\d+$/.test(S.currentDay);
     return (
       <>
         {S.pwaBannerShow && (
@@ -555,13 +590,13 @@ export default class App extends React.Component {
             <button onClick={this.dismissPwaBanner}>✕</button>
           </div>
         )}
-        <Header app={this} />
+        <Header app={this} showCover={isDayTab} />
         <div className="page">
-          <Dashboard app={this} />
+          {isDayTab && <Dashboard app={this} />}
           <Tabs app={this} />
           <div id="panels" ref={this.panelsRef}>
-            {DAYS.filter(d => d.groups.length).map(d => <DayPanel key={d.id} app={this} day={d} />)}
-            <ProgressPanel app={this} />
+            {DAYS.filter(d => d.groups.length && d.id === S.currentDay).map(d => <DayPanel key={d.id} app={this} day={d} />)}
+            {S.currentDay === 'progress' && <ProgressPanel app={this} />}
             <CoachPanel app={this} />
           </div>
           <div className="footer-note">

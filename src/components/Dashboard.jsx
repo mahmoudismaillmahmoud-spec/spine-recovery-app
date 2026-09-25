@@ -1,11 +1,12 @@
 import { DAYS, ICONS as I } from '../data/spine-data.js';
 import { CONFIG } from '../config.js';
-import { ls } from '../lib/storage.js';
+import { useState } from 'react';
+import { ls, lsSet } from '../lib/storage.js';
 import { computeStreak, dayPct } from '../lib/progress.js';
 import Svg from './Svg.jsx';
 import Ring from './Ring.jsx';
 
-export function Header({ app }) {
+export function Header({ app, showCover = true }) {
   const S = app.state;
   const isAr = app.isAr();
   return (
@@ -17,10 +18,12 @@ export function Header({ app }) {
           <button className="lang-btn" onClick={app.toggleLang}><span data-lang="ar">EN</span><span data-lang="en">AR</span></button>
         </div>
       </div>
+      {showCover && (
       <div className="cover">
         <h2><span data-lang="ar">جدولك اليومي المتحرك</span><span data-lang="en">Your Interactive Daily Schedule</span></h2>
         <p><span data-lang="ar">مرونة + استرتشات + قوة، مع تشيك ليست وتايمر وعداد لكل تمرين، وتتبع تقدمك أول بأول.</span><span data-lang="en">Mobility + stretching + strength, with a checklist, timer, and rep counter for every exercise, tracking your progress live.</span></p>
       </div>
+      )}
     </>
   );
 }
@@ -103,6 +106,22 @@ function WeeklySummary({ app, streak }) {
   );
 }
 
+
+function Warning({ app }) {
+  const [open, setOpen] = useState(!ls('warnAck', false));
+  const isAr = app.isAr();
+  if (!open) {
+    return <button className="warn-chip" onClick={() => setOpen(true)}>⚠️ {isAr ? 'تذكير: موافقة الدكتور قبل التمارين' : 'Reminder: doctor sign-off first'}</button>;
+  }
+  return (
+      <div className="warn">
+        <span data-lang="ar"><strong>مهم:</strong> عندك ضغط عصبي حقيقي مع تنميل في القدم — خد موافقة دكتورك/أخصائي العلاج الطبيعي قبل ما تبدأ في أي قسم قوة أو تأهيل هنا.</span>
+        <span data-lang="en"><strong>Important:</strong> you have real nerve compression with foot numbness — get sign-off from your physician/PT before starting any strength or rehab section here.</span>
+        <button className="warn-ack" onClick={() => { lsSet('warnAck', true); setOpen(false); }}>{isAr ? 'فهمت' : 'Got it'}</button>
+      </div>
+  );
+}
+
 export function Dashboard({ app }) {
   const S = app.state;
   const isAr = app.isAr();
@@ -117,21 +136,14 @@ export function Dashboard({ app }) {
   const wPct = weekTotal ? weekDone / weekTotal * 100 : 0;
   return (
     <>
-      <div className="warn">
-        <span data-lang="ar"><strong>مهم:</strong> عندك ضغط عصبي حقيقي مع تنميل في القدم — خد موافقة دكتورك/أخصائي العلاج الطبيعي قبل ما تبدأ في أي قسم قوة أو تأهيل هنا.</span>
-        <span data-lang="en"><strong>Important:</strong> you have real nerve compression with foot numbness — get sign-off from your physician/PT before starting any strength or rehab section here.</span>
-      </div>
+      <Warning app={app} />
       {streak > 0 && (
         <div className="streak-badge">
           <span className="flame" style={{ display: 'inline-flex' }}><Svg html={I.flame} /></span>{' '}
           <span className="streak-text">{isAr ? `${streak} يوم متتالي 🔥` : `${streak}-day streak 🔥`}</span>
         </div>
       )}
-      <div className="stat-strip">
-        <div className="stat-pill"><b>{Math.round(dPct)}%</b><span>{isAr ? 'اليوم' : 'Today'}</span></div>
-        <div className="stat-pill"><b>{Math.round(wPct)}%</b><span>{isAr ? 'الأسبوع' : 'Week'}</span></div>
-        <div className="stat-pill"><b>{streak + (isAr ? ' يوم' : 'd')}</b><span>{isAr ? 'سلسلة' : 'Streak'}</span></div>
-      </div>
+      <Suggestion app={app} />
       <div className="progress-wrap">
         <Ring pct={dPct}><span data-lang="ar">إنجاز اليوم</span><span data-lang="en">Today</span></Ring>
         <Ring pct={wPct}><span data-lang="ar">إنجاز الأسبوع</span><span data-lang="en">This Week</span></Ring>
@@ -165,11 +177,12 @@ export function Dashboard({ app }) {
             {S.healthImport.waterMl != null && <span>💧 {Math.round(S.healthImport.waterMl)} {isAr ? 'مل' : 'mL'}</span>}
           </div>
         )}
-        <p>{isAr
+        <details className="health-help"><summary>{isAr ? 'ℹ️ إزاي بيشتغل؟' : 'ℹ️ How does it work?'}</summary>
+          <p>{isAr
           ? 'أرسل: محتاج Shortcut اسمه "Log Spine Recovery". هات: محتاج Shortcut اسمه "Get Spine Health" بيقرا خطواتك ووزنك ونومك ومياهك من الصحة — دوس الزرار، ولما الشورت كت يخلص ارجع ودوسه تاني.'
           : 'Send needs a Shortcut named "Log Spine Recovery". Import needs a Shortcut named "Get Spine Health" that reads your steps, weight, sleep and water from Health — tap the button, and when the Shortcut finishes come back and tap it again.'}</p>
+        </details>
       </div>
-      <Suggestion app={app} />
       <WeeklySummary app={app} streak={streak} />
     </>
   );
